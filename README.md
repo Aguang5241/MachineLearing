@@ -16,3 +16,38 @@
 * Unsupervised learning
 * Others: Reinforcement learning, recommender system
 ### Supervised learning
+* Given the "right answer" for each example in the data
+1. Regression problem: predict real-valued output
+2. Classfication problem
+### Unsupervised learning
+* Cocktail party problem
+* Clustering algorithm
+************************
+## Linear regression with one variable
+### Model representation
+Example: Training set(data set) of housing prices
+| Size in feet^2 (x) | Price in 1000's (y) |
+|:------------------:|:-------------------:|
+|        2104        |         460         |
+|        1416        |         232         |
+|        1534        |         315         |
+|        852         |         178         |
+|        ...         |         ...         |
+**Notation:**   
+*m = Number of training examples*   
+*x's = "input" variable / features*   
+*y's = "output" variable / "target" variable*   
+* Training set ---> Learning algorithm ---> h(hypothesis)
+* Size of house(x) ---> h ---> Estimated price(y)
+* h is a function: Linear regression with one variable(Univariable linear regression)
+* ![alt Linear regression with one variable](res/linearRegressionWithOneVariable.png)
+* theta: Parameters
+### Cost function
+* ![alt Cost function](res/costFunctionOfLinearRegressionWithOneVariable.png)
+* Also called square error (cost) function
+* Goal: ![alt goalOfCostFunctionOfLinearRegressionWithOneVariable](res/goalOfCostFunctionOfLinearRegressionWithOneVariable.png)
+### Gradient descent
+* Repeat until convergence: ![alt GradientDescentAlgorithm](res/GradientDescentAlgorithm.png)
+* alpha: learning rate
+* Gradient descent can converge to a local minimum, even with the learning rate alpha fixed
+* As we approach a local minimum, gradient descent will automatically take samller steps. So, no need to decrease alpha over time.
