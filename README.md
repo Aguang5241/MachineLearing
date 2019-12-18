@@ -25,7 +25,9 @@
 ************************
 ## Linear regression with one variable
 ### Model representation
+
 Example: Training set(data set) of housing prices
+
 | Size in feet^2 (x) | Price in 1000's (y) |
 |:------------------:|:-------------------:|
 |        2104        |         460         |
@@ -33,6 +35,7 @@ Example: Training set(data set) of housing prices
 |        1534        |         315         |
 |        852         |         178         |
 |        ...         |         ...         |
+
 **Notation:**   
 *m = Number of training examples*   
 *x's = "input" variable / features*   
