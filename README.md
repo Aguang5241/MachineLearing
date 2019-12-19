@@ -101,3 +101,10 @@ a
 |       Need many iterations        |     Don't need to iterate      |
 | Works well even when *n* is large | Need to compute *(X^T * X)^-1* |
 |                                   |   Slow if *n* is very large    |
+
+### Normal equation and non-invertibility(optimal)
+*********************************
+## Octave
+```octave
+
+```
