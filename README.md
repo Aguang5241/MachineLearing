@@ -35,7 +35,7 @@ Example: Training set(data set) of housing prices
 |        1534        |         315         |
 |        852         |         178         |
 |        ...         |         ...         |
-
+a
 **Notation:**   
 *m = Number of training examples*   
 *x's = "input" variable / features*   
@@ -49,8 +49,16 @@ Example: Training set(data set) of housing prices
 * ![alt Cost function](res/costFunctionOfLinearRegressionWithOneVariable.png)
 * Also called square error (cost) function
 * Goal: ![alt goalOfCostFunctionOfLinearRegressionWithOneVariable](res/goalOfCostFunctionOfLinearRegressionWithOneVariable.png)
-### Gradient descent
+### Gradient descent algorithm
 * Repeat until convergence: ![alt GradientDescentAlgorithm](res/GradientDescentAlgorithm.png)
+* For j = 1 and j = 0
 * alpha: learning rate
 * Gradient descent can converge to a local minimum, even with the learning rate alpha fixed
 * As we approach a local minimum, gradient descent will automatically take samller steps. So, no need to decrease alpha over time.
+### Gradient descent for linear regression
+![alt Gradient descent for linear regression](res/gradientDescentForLinearRegression.png)
+******************************
+## Linear Algebra
+* Matrix: Rectangular array of numbers
+* Dimension of matrix: Number of row x number of columns
+* Vector: An n x 1 matrix
