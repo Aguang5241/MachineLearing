@@ -104,7 +104,14 @@ a
 
 ### Normal equation and non-invertibility(optimal)
 *********************************
-## Octave
-```octave
-
-```
+## Logistic regression
+### Classification
+### Hypothesis regression
+* Want *0 <= h(x) <= 1*
+* Sigmoid function(Logistic function): ![alt Sigmoid function](res/SigmoidFunction.png)
+### Decision boundary
+### Cost function
+* Logistic regression cost function: ![alt Logistic regression cost function](res/logisticRegressionCostFunction.png)
+### Simpilified cost function and gradient descent
+* Cost function: ![alt Simpilified cost function](res/simplifiedLogisticRegressionCostFunction.png)
+* Gradient descent: ![alt Simpilified gradient descent](res/simpilifiedGradientDescent.png)
