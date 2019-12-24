@@ -1,0 +1,2 @@
+model_checkpoint_path: "[[21_18_45]]plane[xe10+xe5+b]-1-hiddenL-[10neure][10points][10000iter].ckpt"
+all_model_checkpoint_paths: "[[21_18_45]]plane[xe10+xe5+b]-1-hiddenL-[10neure][10points][10000iter].ckpt"

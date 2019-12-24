@@ -1,4 +1,4 @@
-# Machine Learning
+# Machine Learning(Part.1)
 ## Introduction
 ### What is machine learning?
 * Grew out of work in AI
@@ -115,3 +115,6 @@ a
 ### Simpilified cost function and gradient descent
 * Cost function: ![alt Simpilified cost function](res/simplifiedLogisticRegressionCostFunction.png)
 * Gradient descent: ![alt Simpilified gradient descent](res/simpilifiedGradientDescent.png)
+*********************************************
+*********************************************
+# Machine Learning(Part.2)
