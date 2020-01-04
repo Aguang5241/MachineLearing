@@ -15,6 +15,7 @@
 * Supervised learning --- SVM, NEURAL NETWORKS
 * Unsupervised learning --- CLUSTERING, EM ALGORITHM, PCA
 * Others: Reinforcement learning, recommender system, semi-supervised learning
+* ![alt Relation between Terminology](res/RelationBetweenTerminology.png)
 ### Supervised learning
 * The machine learning task of inferring a function from labeled training data
 * Given the "right answer" for each example in the data
