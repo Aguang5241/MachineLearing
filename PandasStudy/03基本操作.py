@@ -1,5 +1,4 @@
 import pandas as pd
-# import numpy as np
 
 data = pd.read_csv('res/los_census.csv')
 #########################1.默认显示前/后5行##########################

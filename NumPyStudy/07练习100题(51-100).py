@@ -123,3 +123,112 @@ print(h2)
 i = np.linspace(0, 1, 6, endpoint=False)[1:]
 print(i)
 # [0.16666667 0.33333333 0.5        0.66666667 0.83333333]
+###########61.创建一个长度为10的随机一维数组，并将其按升序排序##############
+# my solution
+j1 = np.random.randint(0, 10, 10)
+print(np.sort(j1))
+# [0 0 1 1 2 2 5 5 7 7]
+# the answer
+j2 = np.random.randint(0, 10, 10)
+j2.sort()
+print(j2)
+# [0 0 1 1 2 2 5 5 7 7]
+###########62.创建一个 3x3 的二维数组，并将列按升序排序##############
+# my solution
+k1 = np.random.randint(10, size=(3, 3))
+print(np.sort(k1, axis=0))
+# the answer
+k2 = np.random.randint(10, size=(3, 3))
+k2.sort(axis=0)
+print(k2)
+# [[5 4 0]
+#  [8 4 1]
+#  [8 5 8]]
+###########63.创建一个长度为 5 的一维数组，并将其中最大值替换成 0##############
+l = np.random.randint(0, 10, 5)
+print('Original Array:', l)
+# Original Array: [4 4 6 5 8]
+l[np.argmax(l)] = 0
+print('Changed Array:', l)
+# Changed Array: [4 4 6 5 0]
+###########64.打印每个 NumPy 标量类型的最小值和最大值##############
+for dtype in [np.int8, np.int32, np.int64]:
+    print("The minimum value of {}: ".format(dtype), np.iinfo(dtype).min)
+    print("The maximum value of {}: ".format(dtype), np.iinfo(dtype).max)
+for dtype in [np.float32, np.float64]:
+    print("The minimum value of {}: ".format(dtype), np.finfo(dtype).min)
+    print("The maximum value of {}: ".format(dtype), np.finfo(dtype).max)
+# The minimum value of <class 'numpy.int8'>:  -128
+# The maximum value of <class 'numpy.int8'>:  127
+# The minimum value of <class 'numpy.int32'>:  -2147483648
+# The maximum value of <class 'numpy.int32'>:  2147483647
+# The minimum value of <class 'numpy.int64'>:  -9223372036854775808
+# The maximum value of <class 'numpy.int64'>:  9223372036854775807
+# The minimum value of <class 'numpy.float32'>:  -3.4028235e+38
+# The maximum value of <class 'numpy.float32'>:  3.4028235e+38
+# The minimum value of <class 'numpy.float64'>:  -1.7976931348623157e+308
+# The maximum value of <class 'numpy.float64'>:  1.7976931348623157e+308
+###########65.将 float32 转换为整型##############
+m = np.arange(10, dtype=np.float32)
+print('Original Array: ', m)
+# Original Array:  [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.]
+m = m.astype(np.int32, copy=False)
+print('Changed Array: ', m)
+# Changed Array:  [0 1 2 3 4 5 6 7 8 9]
+###########66.将随机二维数组按照第 3 列从上到下进行升序排列##############
+n = np.random.randint(0, 10, size=(3, 3))
+print('Original Array: \n', n)
+# Original Array:
+#  [[7 5 8]
+#  [4 4 0]
+#  [5 2 2]]
+print('Changed Array: \n', n[n[:, 2].argsort()])
+# Changed Array:
+#  [[4 4 0]
+#  [5 2 2]
+#  [7 5 8]]
+###########67.从随机一维数组中找出距离给定数值（0.5）最近的数##############
+o = np.random.uniform(0, 1, 10)
+print('Random Array: \n', o)
+# Random Array:
+#  [0.87604093 0.60815843 0.74404004 0.7476415  0.39862474 0.14744497
+#  0.48903291 0.28790076 0.93716727 0.9511766 ]
+target = 0.5
+result = o.flat[np.abs(o - target).argmin()]
+print('Result: ', result)
+# Result:  0.48903290555618106
+###########68.将二维数组的前两行进行顺序交换##############
+p = np.random.randint(0, 10, size=(3, 3))
+print('Original Array: \n', p)
+# Original Array:
+#  [[7 7 9]
+#  [0 5 0]
+#  [6 0 5]]
+p[[0, 1]] = p[[1, 0]]
+print('Changed Array: \n', p)
+# Changed Array:
+#  [[0 5 0]
+#  [7 7 9]
+#  [6 0 5]]
+###########69.找出随机一维数组中出现频率最高的值##############
+q = np.random.randint(0, 3, 10)
+print('Original Array: ', q)
+print('Result: ', np.bincount(q).argmax())
+# Original Array:  [2 0 2 1 1 0 1 1 1 2]
+# Result:  1
+###########70.找出给定一维数组中非 0 元素的位置索引##############
+# my solution
+r = np.random.randint(0, 5, 10)
+print('Original Array: ', r)
+# Original Array:  [4 4 2 2 4 2 0 0 2 2]
+indexes = []
+jj = 0
+for ii in r:
+	jj += 1
+	if ii != 0:
+		indexes.append(jj - 1)
+print('Result: ', indexes)
+# Result:  [0, 1, 2, 3, 4, 5, 8, 9]
+# the answer
+print('Result: ', np.nonzero(r))
+# Result:  (array([0, 4, 5, 6, 7, 9], dtype=int64),)
