@@ -30,4 +30,3 @@ print(yet_another)
 with tf.Session() as sess:
     print(sess.run(zeros))
     # [0. 0.]
-    print()
