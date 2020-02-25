@@ -38,6 +38,7 @@ def main():
     # 获取原始数据
     file_path = 'Projects/Experiment/res/filteredData_withoutElements.csv'
     x, y_UTS, y_YS, y_EL = getData(file_path)
+    print(x)
     # 四个特征值（四个相的相分数）+一个输出值（力学性能UTS/YS/EL）
     # 实例化神经网络
     net = Net(n_feature=4, n_hidden=10, n_output=1)
@@ -52,18 +53,18 @@ def main():
     # 损失函数（均方差）
     loss_func = torch.nn.MSELoss()
     # 训练网络
-    for i in range(500):
-        predict_y = net(x)
-        loss_UTS = loss_func(predict_y, y_UTS)
-        # loss_YS = loss_func(predict_y, y_YS)
-        # loss_EL = loss_func(predict_y, y_EL)
-        optimizer.zero_grad()
-        loss_UTS.backward()
-        # loss_YS.backward()
-        # loss_EL.backward()
-        optimizer.step()
-        if (i % 5 == 0):
-            print(i, loss_UTS)
+    # for i in range(500):
+    #     predict_y = net(x)
+    #     loss_UTS = loss_func(predict_y, y_UTS)
+    #     # loss_YS = loss_func(predict_y, y_YS)
+    #     # loss_EL = loss_func(predict_y, y_EL)
+    #     optimizer.zero_grad()
+    #     loss_UTS.backward()
+    #     # loss_YS.backward()
+    #     # loss_EL.backward()
+    #     optimizer.step()
+    #     if (i % 5 == 0):
+    #         print(i, loss_UTS)
             
 
 if __name__ == '__main__':
