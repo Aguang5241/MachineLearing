@@ -1,3 +1,14 @@
+###########################################################
+#                net shape: 4-10-1                        #
+#                layer function: Linear                   #
+#                standard: True                           #
+#                activation function: ReLU                #
+#                loss function: MSELoss                   #
+#                optimizer: Adam                          #
+#                long fitting time                        #
+###########################################################
+
+import os
 import time
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,8 +20,17 @@ import torch.nn.functional as F
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.preprocessing import StandardScaler
 
+# 学习率
+learning_rate = 1e-3
+# 设置损失阈值
+loss_threashold_value = 1e-3
+# 设置最大循环数
+loop_max = 100000
+# 设置标记
+index = np.random.randn(1)
 
-# 定义神经网络（3层神经网络，ReLU激活函数）
+
+# 定义神经网络
 class Net(nn.Module):
     def __init__(self, n_feature, n_hidden, n_output):
         super(Net, self).__init__()
@@ -58,20 +78,18 @@ def train(x, y):
     # 四个特征值（四个相的相分数）+一个输出值（力学性能UTS/YS/EL）
     # 实例化神经网络
     net = Net(n_feature=4, n_hidden=10, n_output=1)
-    # 学习率（如何自动化选择？）
-    learning_rate = 2e-3
-    # SGD优化函数
-    optimizer = torch.optim.SGD(net.parameters(), lr=learning_rate)
+    # Adam优化器
+    optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
     # 损失函数（均方差）
     loss_func = torch.nn.MSELoss()
     # 训练神经网络
-    # 设置损失阈值（如何确定合适的值？）
-    loss_threashold_value = 1e-3
     # 初始化
     loop = 0
+    training_break = False
     start_time = time.time()
     predict_y = net(x)
     loss_y = loss_func(predict_y, y)
+    # 循环训练
     while loss_y > loss_threashold_value:
         loop += 1
         predict_y = net(x)
@@ -79,11 +97,26 @@ def train(x, y):
         optimizer.zero_grad()
         loss_y.backward()
         optimizer.step()
-        if (loop % 1000 == 0):
-            print('Loop:', loop, loss_y)
-    torch.save(net, 'Projects/Experiment/res/model.pkl')
+        if (loop <= loop_max):
+            if (loop % 1000 == 0):
+                print('Loop: %dK ---' % (loop / 1000),
+                      'loss: %.6f' % loss_y.item())
+        else:
+            user_choice = input('Continue or not(Y/N)')
+            if (user_choice.lower() != 'y'):
+                training_break = True
+                print('Training break!!!')
+                break
+            else:
+                loop = 0
+
+    if not training_break:
+        os.makedirs('Projects/Experiment/res/model-v1.1/%.3f' % index)
+        torch.save(net, 'Projects/Experiment/res/model-v1.1/%.3f/model-v1.1.pkl' % index)
+
     end_time = time.time()
     print('Total time: %.2fs' % (end_time - start_time))
+    return training_break
 
 
 # 定义测试函数
@@ -94,14 +127,16 @@ def test(model_path, x):
 
 
 # 绘制散点图
-def draw_scatter(x, y, z):
+def draw_scatter(x_training, y_training, z_training, x_testing, y_testing, z_testing):
     sns.set(font="Times New Roman", font_scale=1)
     fig = plt.figure()
     ax = Axes3D(fig)
     ax.set_xlabel('Mg')
     ax.set_ylabel('Si')
     ax.set_zlabel('Performance')
-    ax.scatter(x, y, z)
+    ax.scatter(x_training, y_training, z_training, color='brown')
+    ax.scatter(x_testing, y_testing, z_testing)
+    plt.savefig('Projects/Experiment/res/model-v1.1/%.3f/model-v1.1.png' % index)
     plt.show()
 
 
@@ -116,27 +151,26 @@ def main():
     # 执行正则化，并记住训练集数据的正则化规则,运用于测试集数据
     x_scaler = StandardScaler().fit(x)
     x_standarded = torch.from_numpy(x_scaler.transform(x)).float()
+    print(x_standarded)
     x_standarded_test = torch.from_numpy(x_scaler.transform(x_testing)).float()
 
     # 执行模型训练
-    train(x_standarded, y_UTS)
+    # training_break = train(x_standarded, y_UTS)
 
     # 调用训练好的模型进行预测
-    model_path = 'Projects/Experiment/res/model.pkl'
-    # 此处不需要跟踪梯度
-    with torch.no_grad():
-        y_testing = test(model_path, x_testing)
-        if np.isnan(y_testing.numpy().any()):
-            print('Run out of range!')
-        else:
-            print('Just fine!')
+    # if not training_break:
+    #     model_path = 'Projects/Experiment/res/model-v1.1/%.3f/model-v1.1.pkl' % index
+    #     # 此处不需要跟踪梯度
+    #     with torch.no_grad():
+    #         y_testing = test(model_path, x_standarded_test)
+    #         if np.isnan(y_testing.numpy().any()):
+    #             print('Run out of range!')
+    #         else:
+    #             print('Just fine!')
 
-    # 数据可视化
-    # 散点图
-    # 原始图
-    draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_UTS.numpy())
-    # 预测图
-    draw_scatter(EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy())
+    #     # 数据可视化(散点图)
+    #     draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_UTS.numpy(),
+    #                  EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy())
 
 
 if __name__ == '__main__':
