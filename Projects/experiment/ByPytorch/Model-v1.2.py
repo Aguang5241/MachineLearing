@@ -25,12 +25,11 @@ from sklearn.preprocessing import StandardScaler
 learning_rate = 1e-4
 # 设置损失阈值
 loss_threashold_value = 1e-3
-# 设置最大循环数
+# 设置单次最大循环数
 loop_max = 100000
-# 设置标记
+# 设置保存路径（带标记）
 index = np.random.randn(1)
-# 设置保存路径
-path = 'Projects/Experiment/res/model-v1.2/Part1/'
+path = 'Projects/Experiment/res/model-v1.2/Part1/%.3f/' % index
 # 设置训练及测试数据路径
 training_data_file_path = 'Projects/Experiment/res/TrainingData.csv'
 testing_data_file_path = 'Projects/Experiment/res/TestingData.csv'
@@ -117,9 +116,9 @@ def train(x, y):
                 loop = 0
 
     if not training_break:
-        os.makedirs(path + '%.3f' % index)
+        os.makedirs(path)
         torch.save(
-            net, path + '%.3f/model-v1.2.pkl' % index)
+            net, path + 'model-v1.2.pkl')
 
     end_time = time.time()
     print('Total time: %.2fs' % (end_time - start_time))
@@ -143,7 +142,7 @@ def draw_scatter(x_training, y_training, z_training, x_testing, y_testing, z_tes
     ax.set_zlabel('Performance')
     ax.scatter(x_training, y_training, z_training, color='brown')
     ax.scatter(x_testing, y_testing, z_testing)
-    plt.savefig(path + '%.3f/model-v1.2.png' % index)
+    plt.savefig(path + 'model-v1.2.png')
     plt.show()
 
 
@@ -163,7 +162,7 @@ def main():
 
     # 调用训练好的模型进行预测
     if not training_break:
-        model_path = path + '%.3f/model-v1.2.pkl' % index
+        model_path = path + 'model-v1.2.pkl'
         # 此处不需要跟踪梯度
         with torch.no_grad():
             y_testing = test(model_path, x_standarded_test)
