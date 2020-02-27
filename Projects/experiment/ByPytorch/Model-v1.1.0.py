@@ -1,16 +1,14 @@
 ###########################################################
-#                net shape: 4-10-5-1                      #
+#                net shape: 4-10-1                        #
 #                layer function: Linear                   #
 #                standard: True                           #
 #                activation function: ReLU                #
 #                loss function: MSELoss                   #
 #                optimizer: Adam                          #
-#                just fine                                #
 ###########################################################
 
 import os
 import time
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -21,15 +19,15 @@ import torch.nn.functional as F
 from mpl_toolkits.mplot3d import Axes3D
 from sklearn.preprocessing import StandardScaler
 
-# 设置学习率
-learning_rate = 1e-4
+# 学习率
+learning_rate = 1e-3
 # 设置损失阈值
 loss_threashold_value = 1e-3
-# 设置单次最大循环数
+# 设置最大循环数
 loop_max = 100000
 # 设置保存路径（带标记）
 index = np.random.randn(1)
-path = 'Projects/Experiment/res/model-v1.2/Part1/%.3f/' % index
+path = 'Projects/Experiment/res/model-v1.1.0/Part1/%.3f/' % index
 # 设置训练及测试数据路径
 training_data_file_path = 'Projects/Experiment/res/TrainingData.csv'
 testing_data_file_path = 'Projects/Experiment/res/TestingData.csv'
@@ -37,15 +35,13 @@ testing_data_file_path = 'Projects/Experiment/res/TestingData.csv'
 
 # 定义神经网络
 class Net(nn.Module):
-    def __init__(self, n_feature, n_hidden1, n_hidden2, n_output):
+    def __init__(self, n_feature, n_hidden, n_output):
         super(Net, self).__init__()
-        self.hidden1 = torch.nn.Linear(n_feature, n_hidden1)
-        self.hidden2 = torch.nn.Linear(n_hidden1, n_hidden2)
-        self.predict = torch.nn.Linear(n_hidden2, n_output)
+        self.hidden = torch.nn.Linear(n_feature, n_hidden)
+        self.predict = torch.nn.Linear(n_hidden, n_output)
 
     def forward(self, x):
-        x = F.relu(self.hidden1(x))
-        x = F.relu(self.hidden2(x))
+        x = F.relu(self.hidden(x))
         x = self.predict(x)
         return x
 
@@ -53,7 +49,7 @@ class Net(nn.Module):
 # 定义获取测试数据函数
 def getTestingData(file_path):
     data = pd.read_csv(file_path)
-    x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_Mg2Si'].values).float()
+    x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
     EL_Si = torch.unsqueeze(
         (torch.from_numpy(data['EL_Si'].values)), dim=1).float()
     EL_Mg = torch.unsqueeze(
@@ -64,8 +60,8 @@ def getTestingData(file_path):
 # 定义获取训练数据函数
 def getTrainingData(file_path):
     data = pd.read_csv(file_path)
-    x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_Mg2Si'].values).float()
-    # print(x.shape) # (6 ,4)
+    x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
+    # print(x.shape) # (6 ,5)
     y_UTS = torch.unsqueeze(
         (torch.from_numpy(data['UTS'].values)), dim=1).float()
     y_YS = torch.unsqueeze(
@@ -83,11 +79,12 @@ def getTrainingData(file_path):
 # 定义训练函数
 def train(x, y):
     # 实例化神经网络
-    net = Net(n_feature=4, n_hidden1=10, n_hidden2=5, n_output=1)
+    net = Net(n_feature=4, n_hidden=10, n_output=1)
     # Adam优化器
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
     # 损失函数（均方差）
     loss_func = torch.nn.MSELoss()
+    # 训练神经网络
     # 初始化
     loop = 0
     training_break = False
@@ -118,7 +115,7 @@ def train(x, y):
     if not training_break:
         os.makedirs(path)
         torch.save(
-            net, path + 'model-v1.2.pkl')
+            net, path + 'model-v1.1.0.pkl')
 
     end_time = time.time()
     print('Total time: %.2fs' % (end_time - start_time))
@@ -140,20 +137,21 @@ def draw_scatter(x_training, y_training, z_training, x_testing, y_testing, z_tes
     ax.set_xlabel('Mg')
     ax.set_ylabel('Si')
     ax.set_zlabel('Performance')
-    ax.scatter(x_training, y_training, z_training, color='brown')
+    ax.scatter(x_training, y_training, z_training, color='red', s=50)
     ax.scatter(x_testing, y_testing, z_testing)
-    plt.savefig(path + 'model-v1.2.png')
+    plt.savefig(path + 'model-v1.1.0.png')
     plt.show()
 
 
 def main():
-    # 获取数据
+    # 获取训练及测试数据
     x, y_UTS, y_YS, y_EL, EL_Si, EL_Mg = getTrainingData(
         training_data_file_path)
     x_testing, EL_Si_test, EL_Mg_test = getTestingData(testing_data_file_path)
 
     # 执行正则化，并记住训练集数据的正则化规则,运用于测试集数据
     x_scaler = StandardScaler().fit(x)
+    # x_scaler = StandardScaler().fit(x_testing)
     x_standarded = torch.from_numpy(x_scaler.transform(x)).float()
     x_standarded_test = torch.from_numpy(x_scaler.transform(x_testing)).float()
 
@@ -162,14 +160,14 @@ def main():
 
     # 调用训练好的模型进行预测
     if not training_break:
-        model_path = path + 'model-v1.2.pkl'
+        model_path = path + 'model-v1.1.0.pkl'
         # 此处不需要跟踪梯度
         with torch.no_grad():
             y_testing = test(model_path, x_standarded_test)
             if np.isnan(y_testing.numpy().any()):
                 print('Run out of range!')
             else:
-                print('Just fine!')
+                print('Just fine, index ---> %.3f' % index)
 
         # 数据可视化(散点图)
         draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_UTS.numpy(),
