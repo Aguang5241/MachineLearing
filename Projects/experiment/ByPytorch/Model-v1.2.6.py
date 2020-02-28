@@ -3,8 +3,9 @@
 #                layer function: Linear                   #
 #                standard: True                           #
 #                activation function: ReLU                #
-#                loss function: L1loss                    #
+#                loss function: SmoothL1Loss              #
 #                optimizer: Adam                          #
+#                with consider the general performance    #
 ###########################################################
 
 import os
@@ -18,20 +19,31 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mpl_toolkits.mplot3d import Axes3D
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 # 设置学习率
-learning_rate = 3e-3
+learning_rate = 1e-3
 # 设置损失阈值
-loss_threashold_value = 0.316
+# loss_threashold_value = 0.36
+# loss_threashold_value = 0.56
+loss_threashold_value = 0.36
+# 设置误差矩阵
+error = torch.tensor([[1, 1, 0.1],
+                      [1, 1, 0.1],
+                      [1, 1, 0.1],
+                      [1, 1, 0.1],
+                      [1, 1, 0.1],
+                      [1, 1, 0.1],
+                      [1, 1, 0.1],
+                      [1, 1, 0.1]]).float()
 # 设置单次最大循环数
 loop_max = 100000
 # 设置保存路径（带标记）
 index = np.random.randn(1)
-path = 'Projects/Experiment/res/model-v1.2.3/Part1/%.3f/' % index
+path = 'Projects/Experiment/res/model-v1.2.6/Part3(8x3)/%.3f/' % index
 # 设置训练及测试数据路径
-training_data_file_path = 'Projects/Experiment/res/TrainingData.csv'
-testing_data_file_path = 'Projects/Experiment/res/TestingData.csv'
+training_data_file_path = 'Projects/Experiment/res/TrainingData+2.csv'
+testing_data_file_path = 'Projects/Experiment/res/TestingDataFiltered.csv'
 
 
 # 定义神经网络
@@ -86,25 +98,27 @@ def train(x, y):
     # Adam优化器
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
     # 损失函数（余弦相似度）
-    loss_func = torch.nn.L1Loss()
+    loss_func = torch.nn.SmoothL1Loss()
     # 初始化
     loop = 0
     training_break = False
     start_time = time.time()
     predict_y = net(x)
-    loss_y = loss_func(predict_y, y)
+    loss_y = torch.abs(predict_y - y)
+    loss = loss_func(loss_y, error)
     # 循环训练
-    while loss_y > loss_threashold_value:
+    while loss > loss_threashold_value:
         loop += 1
         predict_y = net(x)
-        loss_y = loss_func(predict_y, y)
+        loss_y = torch.abs(predict_y - y)
+        loss = loss_func(loss_y, error)
         optimizer.zero_grad()
-        loss_y.backward()
+        loss.backward()
         optimizer.step()
         if (loop <= loop_max):
             if (loop % 1000 == 0):
                 print('Loop: %dK ---' % (loop / 1000),
-                      'loss: %.6f' % loss_y.item())
+                      'loss: %.6f' % loss.item())
         else:
             user_choice = input('Continue or not(Y/N)')
             if (user_choice.lower() != 'y'):
@@ -116,8 +130,7 @@ def train(x, y):
 
     if not training_break:
         os.makedirs(path)
-        torch.save(
-            net, path + 'model-v1.2.3.pkl')
+        torch.save(net, path + 'model-v1.2.6.pkl')
 
     end_time = time.time()
     print('Total time: %.2fs' % (end_time - start_time))
@@ -128,7 +141,34 @@ def train(x, y):
 def test(model_path, x):
     net = torch.load(model_path)
     predict_y = net(x)
+    pd.DataFrame(predict_y.numpy()).to_csv(
+        path + 'model-v1.2.6.csv', index=False, header=['UTS', 'YS', 'EL'])
     return predict_y
+
+
+# 综合处理全部数据
+def data_process(path, x, y):
+    data = pd.read_csv(path)
+    mms = MinMaxScaler()
+    data_processed = mms.fit_transform(data.values)
+    data_calculated = data_processed[:, 0] + \
+        data_processed[:, 1] + data_processed[:, 2]
+    # 获取最值索引
+    max_index = data_calculated.tolist().index(max(data_calculated))
+    print('The max index is: %d' % max_index,
+          'Si: ', x[max_index], 'Mg: ', y[max_index])
+    # 可视化
+    sns.set(font="Times New Roman", font_scale=1)
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    ax.set_xlabel('Si')
+    ax.set_ylabel('Mg')
+    ax.set_zlabel('Normalized Performance')
+    ax.scatter(x, y, data_calculated)
+    ax.scatter(x[max_index], y[max_index],
+               data_calculated[max_index], color='red', s=50)
+    plt.savefig(path + 'model-v1.2.6(%.3f).png' % np.random.randn(1))
+    plt.show()
 
 
 # 绘制散点图
@@ -136,12 +176,12 @@ def draw_scatter(x_training, y_training, z_training, x_testing, y_testing, z_tes
     sns.set(font="Times New Roman", font_scale=1)
     fig = plt.figure()
     ax = Axes3D(fig)
-    ax.set_xlabel('Mg')
-    ax.set_ylabel('Si')
+    ax.set_xlabel('Si')
+    ax.set_ylabel('Mg')
     ax.set_zlabel('Performance')
     ax.scatter(x_training, y_training, z_training, color='red', s=50)
     ax.scatter(x_testing, y_testing, z_testing)
-    plt.savefig(path + 'model-v1.2.3(%.3f).png' % np.random.randn(1))
+    plt.savefig(path + 'model-v1.2.6(%.3f).png' % np.random.randn(1))
     plt.show()
 
 
@@ -164,7 +204,7 @@ def main():
 
     # 调用训练好的模型进行预测
     if not training_break:
-        model_path = path + 'model-v1.2.3.pkl'
+        model_path = path + 'model-v1.2.6.pkl'
         # 此处不需要跟踪梯度
         with torch.no_grad():
             y_testing = test(model_path, x_standarded_test)
@@ -180,6 +220,8 @@ def main():
                      EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy()[:, 1])
         draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_EL.numpy(),
                      EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy()[:, 2])
+        data_processed = data_process(
+            path + 'model-v1.2.6.csv', EL_Si_test.numpy(), EL_Mg_test.numpy())
 
 
 if __name__ == '__main__':

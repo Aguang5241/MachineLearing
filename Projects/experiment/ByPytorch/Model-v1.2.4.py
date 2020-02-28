@@ -21,12 +21,15 @@ from mpl_toolkits.mplot3d import Axes3D
 from sklearn.preprocessing import StandardScaler
 
 # 设置输出值数量(1 --> EL; 2 --> UTS & YS)
-output_num = 1
+output_num = 2
 # 设置学习率
-learning_rate = 5e-4
+if output_num == 1:
+    learning_rate = 5e-4
+else:
+    learning_rate = 1e-3
 # 设置损失阈值
-UTS_YS_loss_threashold_value = 3
-EL_loss_threashold_value = 1e-2
+UTS_YS_loss_threashold_value = 1
+EL_loss_threashold_value = 1e-1
 # 设置单次最大循环数
 loop_max = 100000
 # 设置保存路径（带标记）
@@ -141,6 +144,7 @@ def train(x, y, i):
 def test(model_path, x):
     net = torch.load(model_path)
     predict_y = net(x)
+    pd.DataFrame(predict_y.numpy()).to_csv(path + 'model-v1.2.4.csv', index=False, header=False)
     return predict_y
 
 
