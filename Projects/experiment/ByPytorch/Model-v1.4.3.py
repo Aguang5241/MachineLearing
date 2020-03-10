@@ -3,10 +3,12 @@
 #                layer function: Linear                   #
 #                standard: True                           #
 #                activation function: ReLU                #
-#                loss function: SmoothL1Loss              #
+#                loss function: MSELoss                   #
 #                optimizer: Adam                          #
-#                with consider the general performance    #
 #                visualize the loss                       #
+#                0.5UTS + 0.5YS + EL                      #
+#                output the coefficients                  #
+#                output the results                       #
 ###########################################################
 
 import os
@@ -20,25 +22,20 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mpl_toolkits.mplot3d import Axes3D
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 # 设置学习率
 learning_rate = 1e-3
 # 设置损失阈值
-loss_threashold_value = 0.1
-# loss_threashold_value = 0.36
-# loss_threashold_value = 0.56
-# loss_threashold_value = 0.76
-# loss_threashold_value = 1
-# loss_threashold_value = 2.25
+loss_threashold_value = 1e-2
 # 设置误差矩阵
-e = torch.tensor([1, 1, 0.1]).float()
+e = torch.tensor([3, 3, 0.1]).float()
 error = e.repeat(6, 1)
 # 设置单次最大循环数
 loop_max = 100000
 # 设置保存路径（带标记）
 index = np.random.randn(1)
-path = 'Projects/Experiment/res/model-v1.4.0/Part1/%.3f/' % index
+path = 'Projects/Experiment/res/model-v1.4.3/Part1/%.3f/' % index
 # 设置训练及测试数据路径
 training_data_file_path = 'Projects/Experiment/res/TrainingData.csv'
 testing_data_file_path = 'Projects/Experiment/res/TestingDataFiltered.csv'
@@ -57,7 +54,6 @@ class Net(nn.Module):
         x = F.relu(self.hidden2(x))
         x = self.predict(x)
         return x
-
 
 
 # 定义获取测试数据函数
@@ -96,8 +92,8 @@ def train(x, y):
     net = Net(n_feature=4, n_hidden1=10, n_hidden2=5, n_output=3)
     # Adam优化器
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
-    # 损失函数（余弦相似度）
-    loss_func = torch.nn.SmoothL1Loss()
+    # 损失函数
+    loss_func = torch.nn.MSELoss()
     # 数据初始化
     loop = 0
     training_break = False
@@ -111,7 +107,7 @@ def train(x, y):
     ax = plt.gca()
     plt.xlabel('Loops/K')
     plt.ylabel('Loss value')
-    plt.ylim(0, 5)
+    plt.ylim(-0.1, 3)
     # 循环训练
     while loss > loss_threashold_value:
         loop += 1
@@ -126,9 +122,9 @@ def train(x, y):
                 print('Loop: %dK ---' % (loop / 1000),
                       'loss: %.6f' % loss.item())
                 # 可视化误差变化
-                if loss.item() <= 5:
-                    ax.scatter(loop / 1000, loss.item(), color='red', s=10)
-                    plt.pause(0.01)
+                if loss.item() <= 3:
+                    ax.scatter(loop / 1000, loss.item(), color='red', s=5)
+                    plt.pause(0.1)
         else:
             user_choice = input('Continue or not(Y/N)')
             if (user_choice.lower() != 'y'):
@@ -140,7 +136,7 @@ def train(x, y):
 
     if not training_break:
         os.makedirs(path)
-        torch.save(net, path + 'model-v1.4.0.pkl')
+        torch.save(net, path + 'model-v1.4.3.pkl')
 
     end_time = time.time()
     w_1 = net.hidden1.weight
@@ -149,6 +145,9 @@ def train(x, y):
     b_1 = net.hidden1.bias
     b_2 = net.hidden2.bias
     b_3 = net.predict.bias
+    w_total = (w_3.mm(w_2)).mm(w_1)
+    b_total = w_3.mm(w_2.mm(b_1.view(10, 1))) + \
+        w_3.mm(b_2.view(5, 1)) + b_3.view(3, 1)
     print('===================Training complete====================')
     print('Total time: %.2fs' % (end_time - start_time))
     print('layer1 weight ---> ', w_1)
@@ -157,10 +156,13 @@ def train(x, y):
     print('layer2 bias ---> ', b_2)
     print('layer3 weight ---> ', w_3)
     print('layer3 bias ---> ', b_3)
-    print('Total weight ---> \n', (w_3.mm(w_2)).mm(w_1))
-    print('Total bias ---> \n', w_3.mm(w_2.mm(b_1.view(10, 1))) +
-          w_3.mm(b_2.view(5, 1)) + b_3.view(3, 1))
-    plt.savefig(path + 'model-v1.4.0.png')
+    print('Total weight ---> \n', w_total)
+    print('Total bias ---> \n', b_total)
+    np.savetxt(path + 'total_weight.csv',
+               w_total.detach().numpy(), fmt='%.3f', delimiter=',')
+    np.savetxt(path + 'total_bias.csv', b_total.detach().numpy(),
+               fmt='%.3f', delimiter=',')
+    plt.savefig(path + 'model-v1.4.3.png')
     plt.show()
     return training_break
 
@@ -170,33 +172,44 @@ def test(model_path, x):
     net = torch.load(model_path)
     predict_y = net(x)
     pd.DataFrame(predict_y.numpy()).to_csv(
-        path + 'model-v1.4.0.csv', index=False, header=['UTS', 'YS', 'EL'])
+        path + 'model-v1.4.3.csv', index=False, header=['UTS', 'YS', 'EL'])
     return predict_y
 
 
 # 综合处理全部数据
 def data_process(path, x, y):
-    data = pd.read_csv(path + 'model-v1.4.0.csv')
+    data = pd.read_csv(path + 'model-v1.4.3.csv')
     mms = MinMaxScaler()
     data_processed = mms.fit_transform(data.values)
-    data_calculated = data_processed[:, 0] + \
-        data_processed[:, 1] + data_processed[:, 2]
+    # data_calculated = 0.5 * data_processed[:, 0] + 0.5 * data_processed[:, 1] + data_processed[:, 2]
+    data_calculated = 0.5 * data_processed[:, 0] + 0.5 * data_processed[:, 1]
     # 获取最值索引
     max_index = data_calculated.tolist().index(max(data_calculated))
+    # UTS + log10(EL)
+    # data_calculated = data.values[:, 0] + 150 * np.log10(data.values[:, 2])
+    # YS + log10(EL)
+    # data_calculated = data.values[:, 1] + 150 * np.log10(data.values[:, 2])
     print('========================Results=========================')
-    print('Si: ', x[max_index], '\nMg: ', y[max_index],
-          '\nPerformance: ', data.values[max_index, :])
+    results = 'Si: ' + str(x[max_index][0]) + \
+        '\nMg: ' + str(y[max_index][0]) + \
+        '\nUTS: ' + str(data.values[max_index, 0]) + \
+        '\nYS: ' + str(data.values[max_index, 1]) + \
+        '\nEL: ' + str(data.values[max_index, 2])
+    print(results)
+    f = open(path + 'results.csv', 'w')
+    f.write(results)
+    f.close()
     # 可视化
     sns.set(font="Times New Roman")
     fig = plt.figure()
     ax = Axes3D(fig)
     ax.set_xlabel('Si')
     ax.set_ylabel('Mg')
-    ax.set_zlabel('Normalized Performance')
+    ax.set_zlabel('General Performance')
     ax.scatter(x, y, data_calculated)
     ax.scatter(x[max_index], y[max_index],
                data_calculated[max_index], color='red', s=50)
-    plt.savefig(path + 'model-v1.4.0(%.3f).png' % np.random.randn(1))
+    plt.savefig(path + 'model-v1.4.3(%.3f).png' % np.random.randn(1))
     plt.show()
 
 
@@ -210,7 +223,7 @@ def draw_scatter(x_training, y_training, z_training, x_testing, y_testing, z_tes
     ax.set_zlabel('Performance')
     ax.scatter(x_training, y_training, z_training, color='red', s=50)
     ax.scatter(x_testing, y_testing, z_testing)
-    plt.savefig(path + 'model-v1.4.0(%.3f).png' % np.random.randn(1))
+    plt.savefig(path + 'model-v1.4.3(%.3f).png' % np.random.randn(1))
     plt.show()
 
 
@@ -232,7 +245,7 @@ def main():
 
     # 调用训练好的模型进行预测
     if not training_break:
-        model_path = path + 'model-v1.4.0.pkl'
+        model_path = path + 'model-v1.4.3.pkl'
         # 此处不需要跟踪梯度
         with torch.no_grad():
             y_testing = test(model_path, x_standarded_test)
