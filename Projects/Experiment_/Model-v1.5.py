@@ -9,6 +9,7 @@
 #                0.5UTS + 0.5YS + EL                      #
 #                output the coefficients                  #
 #                output the results                       #
+#                visualize the results                    #
 ###########################################################
 
 import os
@@ -35,10 +36,10 @@ error = e.repeat(6, 1)
 loop_max = 100000
 # 设置保存路径（带标记）
 index = np.random.randn(1)
-path = 'Projects/Experiment/res/model-v1.4.3/Part1/%.3f/' % index
+path = 'Projects/Experiment_/res/model-v1.5/%.3f/' % index
 # 设置训练及测试数据路径
-training_data_file_path = 'Projects/Experiment/res/TrainingData.csv'
-testing_data_file_path = 'Projects/Experiment/res/TestingDataFiltered.csv'
+training_data_file_path = 'Projects/Experiment_/res/Data/TrainingData.csv'
+testing_data_file_path = 'Projects/Experiment_/res/Data/TestingDataFiltered.csv'
 
 
 # 定义神经网络
@@ -57,7 +58,7 @@ class Net(nn.Module):
 
 
 # 定义获取测试数据函数
-def getTestingData(file_path):
+def get_testing_data(file_path):
     data = pd.read_csv(file_path)
     x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
     EL_Si = torch.unsqueeze(
@@ -68,7 +69,7 @@ def getTestingData(file_path):
 
 
 # 定义获取训练数据函数
-def getTrainingData(file_path):
+def get_training_data(file_path):
     data = pd.read_csv(file_path)
     x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
     # print(x.shape) # (6 ,4)
@@ -136,7 +137,7 @@ def train(x, y):
 
     if not training_break:
         os.makedirs(path)
-        torch.save(net, path + 'model-v1.4.3.pkl')
+        torch.save(net, path + 'model-v1.4.4.pkl')
 
     end_time = time.time()
     w_1 = net.hidden1.weight
@@ -174,7 +175,7 @@ def train(x, y):
                w_total.detach().numpy(), fmt='%.3f', delimiter=',')
     np.savetxt(path + 'total_bias.csv', b_total.detach().numpy(),
                fmt='%.3f', delimiter=',')
-    plt.savefig(path + 'model-v1.4.3.png')
+    plt.savefig(path + 'learning_curve.png')
     plt.show()
     return training_break
 
@@ -184,23 +185,19 @@ def test(model_path, x):
     net = torch.load(model_path)
     predict_y = net(x)
     pd.DataFrame(predict_y.numpy()).to_csv(
-        path + 'model-v1.4.3.csv', index=False, header=['UTS', 'YS', 'EL'])
+        path + 'testing_results.csv', index=False, header=['UTS', 'YS', 'EL'])
     return predict_y
 
 
 # 综合处理全部数据
 def data_process(path, x, y):
-    data = pd.read_csv(path + 'model-v1.4.3.csv')
+    data = pd.read_csv(path + 'testing_results.csv')
     mms = MinMaxScaler()
     data_processed = mms.fit_transform(data.values)
     # data_calculated = 0.5 * data_processed[:, 0] + 0.5 * data_processed[:, 1] + data_processed[:, 2]
     data_calculated = 0.5 * data_processed[:, 0] + 0.5 * data_processed[:, 1]
     # 获取最值索引
     max_index = data_calculated.tolist().index(max(data_calculated))
-    # UTS + log10(EL)
-    # data_calculated = data.values[:, 0] + 150 * np.log10(data.values[:, 2])
-    # YS + log10(EL)
-    # data_calculated = data.values[:, 1] + 150 * np.log10(data.values[:, 2])
     print('========================Results=========================')
     results = 'Si: ' + str(x[max_index][0]) + \
         '\nMg: ' + str(y[max_index][0]) + \
@@ -208,7 +205,7 @@ def data_process(path, x, y):
         '\nYS: ' + str(data.values[max_index, 1]) + \
         '\nEL: ' + str(data.values[max_index, 2])
     print(results)
-    f = open(path + 'results.csv', 'w')
+    f = open(path + 'optimal_general_performance.csv', 'w')
     f.write(results)
     f.close()
     # 可视化
@@ -221,29 +218,123 @@ def data_process(path, x, y):
     ax.scatter(x, y, data_calculated)
     ax.scatter(x[max_index], y[max_index],
                data_calculated[max_index], color='red', s=50)
-    plt.savefig(path + 'model-v1.4.3(%.3f).png' % np.random.randn(1))
+    plt.savefig(path + 'general_Performance.png')
     plt.show()
 
 
 # 绘制散点图
-def draw_scatter(x_training, y_training, z_training, x_testing, y_testing, z_testing):
+def draw_scatter(x_training, y_training, z_training, x_testing, y_testing, z_testing, item):
+    if item == 'UTS / MPa':
+        fig_name = 'UTS'
+    elif item == 'YS / MPa':
+        fig_name = 'YS'
+    else:
+        fig_name = 'EL'
     sns.set(font="Times New Roman", font_scale=1)
     fig = plt.figure()
     ax = Axes3D(fig)
     ax.set_xlabel('Si')
     ax.set_ylabel('Mg')
-    ax.set_zlabel('Performance')
+    ax.set_zlabel(item)
     ax.scatter(x_training, y_training, z_training, color='red', s=50)
     ax.scatter(x_testing, y_testing, z_testing)
-    plt.savefig(path + 'model-v1.4.3(%.3f).png' % np.random.randn(1))
+    plt.savefig(path + 'elements_%s.png' % fig_name)
     plt.show()
 
 
+# 绘制相分数-性能关系图
+def draw_relation(x_training, y_training, x_testing, y_testing):
+    sns.set(font="Times New Roman", font_scale=1)
+    # UTS
+    fig1, ax1 = plt.subplots(2, 2, figsize=(16, 12))
+    # Al_1/UTS
+    ax1[0][0].set_xlabel('Al_1 / wt.%')
+    ax1[0][0].set_ylabel('UTS / MPa')
+    ax1[0][0].set_title('Al_1/UTS', fontstyle='oblique')
+    ax1[0][0].scatter(x_testing[:, 0], y_testing[:, 0])
+    ax1[0][0].scatter(x_training[:, 0], y_training[:, 0], color='red')
+    # Al_2/UTS
+    ax1[0][1].set_xlabel('Al_2 / wt.%')
+    ax1[0][1].set_ylabel('UTS / MPa')
+    ax1[0][1].set_title('Al_2/UTS', fontstyle='oblique')
+    ax1[0][1].scatter(x_testing[:, 1], y_testing[:, 0])
+    ax1[0][1].scatter(x_training[:, 1], y_training[:, 0], color='red')
+    # Si/UTS
+    ax1[1][0].set_xlabel('Si / wt.%')
+    ax1[1][0].set_ylabel('UTS / MPa')
+    ax1[1][0].set_title('Si/UTS', fontstyle='oblique')
+    ax1[1][0].scatter(x_testing[:, 2], y_testing[:, 0])
+    ax1[1][0].scatter(x_training[:, 2], y_training[:, 0], color='red')
+    # AlSc2Si2/UTS
+    ax1[1][1].set_xlabel('AlSc2Si2 / wt.%')
+    ax1[1][1].set_ylabel('UTS / MPa')
+    ax1[1][1].set_title('AlSc2Si2/UTS', fontstyle='oblique')
+    ax1[1][1].scatter(x_testing[:, 3], y_testing[:, 0])
+    ax1[1][1].scatter(x_training[:, 3], y_training[:, 0], color='red')
+    plt.savefig(path + 'phase_UTS.png', bbox_inches='tight')
+    # YS
+    fig1, ax1 = plt.subplots(2, 2, figsize=(16, 12))
+    # Al_1/YS
+    ax1[0][0].set_xlabel('Al_1 / wt.%')
+    ax1[0][0].set_ylabel('YS / MPa')
+    ax1[0][0].set_title('Al_1/YS', fontstyle='oblique')
+    ax1[0][0].scatter(x_testing[:, 0], y_testing[:, 1])
+    ax1[0][0].scatter(x_training[:, 0], y_training[:, 1], color='red')
+    # Al_2/YS
+    ax1[0][1].set_xlabel('Al_2 / wt.%')
+    ax1[0][1].set_ylabel('YS / MPa')
+    ax1[0][1].set_title('Al_2/YS', fontstyle='oblique')
+    ax1[0][1].scatter(x_testing[:, 1], y_testing[:, 1])
+    ax1[0][1].scatter(x_training[:, 1], y_training[:, 1], color='red')
+    # Si/YS
+    ax1[1][0].set_xlabel('Si / wt.%')
+    ax1[1][0].set_ylabel('YS / MPa')
+    ax1[1][0].set_title('Si/YS', fontstyle='oblique')
+    ax1[1][0].scatter(x_testing[:, 2], y_testing[:, 1])
+    ax1[1][0].scatter(x_training[:, 2], y_training[:, 1], color='red')
+    # AlSc2Si2/YS
+    ax1[1][1].set_xlabel('AlSc2Si2 / wt.%')
+    ax1[1][1].set_ylabel('YS / MPa')
+    ax1[1][1].set_title('AlSc2Si2/YS', fontstyle='oblique')
+    ax1[1][1].scatter(x_testing[:, 3], y_testing[:, 1])
+    ax1[1][1].scatter(x_training[:, 3], y_training[:, 1], color='red')
+    plt.savefig(path + 'phase_YS.png', bbox_inches='tight')
+    # EL
+    fig1, ax1 = plt.subplots(2, 2, figsize=(16, 12))
+    # Al_1/EL
+    ax1[0][0].set_xlabel('Al_1 / wt.%')
+    ax1[0][0].set_ylabel('EL / MPa')
+    ax1[0][0].set_title('Al_1/EL', fontstyle='oblique')
+    ax1[0][0].scatter(x_testing[:, 0], y_testing[:, 2])
+    ax1[0][0].scatter(x_training[:, 0], y_training[:, 2], color='red')
+    # Al_2/EL
+    ax1[0][1].set_xlabel('Al_2 / wt.%')
+    ax1[0][1].set_ylabel('EL / MPa')
+    ax1[0][1].set_title('Al_2/EL', fontstyle='oblique')
+    ax1[0][1].scatter(x_testing[:, 1], y_testing[:, 2])
+    ax1[0][1].scatter(x_training[:, 1], y_training[:, 2], color='red')
+    # Si/EL
+    ax1[1][0].set_xlabel('Si / wt.%')
+    ax1[1][0].set_ylabel('EL / MPa')
+    ax1[1][0].set_title('Si/EL', fontstyle='oblique')
+    ax1[1][0].scatter(x_testing[:, 2], y_testing[:, 2])
+    ax1[1][0].scatter(x_training[:, 2], y_training[:, 2], color='red')
+    # AlSc2Si2/EL
+    ax1[1][1].set_xlabel('AlSc2Si2 / wt.%')
+    ax1[1][1].set_ylabel('EL / MPa')
+    ax1[1][1].set_title('AlSc2Si2/EL', fontstyle='oblique')
+    ax1[1][1].scatter(x_testing[:, 3], y_testing[:, 2])
+    ax1[1][1].scatter(x_training[:, 3], y_training[:, 2], color='red')
+    plt.savefig(path + 'phase_EL.png', bbox_inches='tight')
+    plt.show()
+
+# 程序入口
 def main():
     # 获取数据
-    x, y_UTS, y_YS, y_EL, EL_Si, EL_Mg = getTrainingData(
+    x, y_UTS, y_YS, y_EL, EL_Si, EL_Mg = get_training_data(
         training_data_file_path)
-    x_testing, EL_Si_test, EL_Mg_test = getTestingData(testing_data_file_path)
+    x_testing, EL_Si_test, EL_Mg_test = get_testing_data(
+        testing_data_file_path)
 
     # 执行正则化，并记住训练集数据的正则化规则,运用于测试集数据
     x_scaler = StandardScaler().fit(x)
@@ -257,7 +348,7 @@ def main():
 
     # 调用训练好的模型进行预测
     if not training_break:
-        model_path = path + 'model-v1.4.3.pkl'
+        model_path = path + 'model-v1.4.4.pkl'
         # 此处不需要跟踪梯度
         with torch.no_grad():
             y_testing = test(model_path, x_standarded_test)
@@ -269,14 +360,18 @@ def main():
 
                 # 数据可视化(散点图)
                 draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_UTS.numpy(),
-                             EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy()[:, 0])
+                             EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy()[:, 0], 'UTS / MPa')
                 draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_YS.numpy(),
-                             EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy()[:, 1])
+                             EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy()[:, 1], 'YS / MPa')
                 draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_EL.numpy(),
-                             EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy()[:, 2])
+                             EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy()[:, 2], 'EL / %')
 
-                # 预测数据处理并进行可视化
-                data_process(path, EL_Si_test.numpy(), EL_Mg_test.numpy())
+                # 综合力学性能计算及可视化
+                # data_process(path, EL_Si_test.numpy(), EL_Mg_test.numpy())
+
+                # 绘制相分数-性能关系图
+                draw_relation(x.numpy(), y_list.numpy(),
+                              x_testing.numpy(), y_testing.numpy())
 
 
 if __name__ == '__main__':

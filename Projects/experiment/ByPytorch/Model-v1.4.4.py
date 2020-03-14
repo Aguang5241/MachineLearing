@@ -9,6 +9,7 @@
 #                0.5UTS + 0.5YS + EL                      #
 #                output the coefficients                  #
 #                output the results                       #
+#                visualize the results                    #
 ###########################################################
 
 import os
@@ -25,9 +26,10 @@ from mpl_toolkits.mplot3d import Axes3D
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
 # 设置学习率
-learning_rate = 1e-4
+learning_rate = 3e-4
 # 设置损失阈值
 loss_threashold_value = 1e-2
+# loss_threashold_value = 100
 # 设置误差矩阵
 e = torch.tensor([3, 3, 0.1]).float()
 error = e.repeat(6, 1)
@@ -35,7 +37,7 @@ error = e.repeat(6, 1)
 loop_max = 100000
 # 设置保存路径（带标记）
 index = np.random.randn(1)
-path = 'Projects/Experiment/res/model-v1.4.3/Part1/%.3f/' % index
+path = 'Projects/Experiment/res/model-v1.4.4/Part1/%.3f/' % index
 # 设置训练及测试数据路径
 training_data_file_path = 'Projects/Experiment/res/TrainingData.csv'
 testing_data_file_path = 'Projects/Experiment/res/TestingDataFiltered.csv'
@@ -136,7 +138,7 @@ def train(x, y):
 
     if not training_break:
         os.makedirs(path)
-        torch.save(net, path + 'model-v1.4.3.pkl')
+        torch.save(net, path + 'model-v1.4.4.pkl')
 
     end_time = time.time()
     w_1 = net.hidden1.weight
@@ -174,7 +176,7 @@ def train(x, y):
                w_total.detach().numpy(), fmt='%.3f', delimiter=',')
     np.savetxt(path + 'total_bias.csv', b_total.detach().numpy(),
                fmt='%.3f', delimiter=',')
-    plt.savefig(path + 'model-v1.4.3.png')
+    plt.savefig(path + 'model-v1.4.4.png')
     plt.show()
     return training_break
 
@@ -184,13 +186,13 @@ def test(model_path, x):
     net = torch.load(model_path)
     predict_y = net(x)
     pd.DataFrame(predict_y.numpy()).to_csv(
-        path + 'model-v1.4.3.csv', index=False, header=['UTS', 'YS', 'EL'])
+        path + 'model-v1.4.4.csv', index=False, header=['UTS', 'YS', 'EL'])
     return predict_y
 
 
 # 综合处理全部数据
 def data_process(path, x, y):
-    data = pd.read_csv(path + 'model-v1.4.3.csv')
+    data = pd.read_csv(path + 'model-v1.4.4.csv')
     mms = MinMaxScaler()
     data_processed = mms.fit_transform(data.values)
     # data_calculated = 0.5 * data_processed[:, 0] + 0.5 * data_processed[:, 1] + data_processed[:, 2]
@@ -221,7 +223,7 @@ def data_process(path, x, y):
     ax.scatter(x, y, data_calculated)
     ax.scatter(x[max_index], y[max_index],
                data_calculated[max_index], color='red', s=50)
-    plt.savefig(path + 'model-v1.4.3(%.3f).png' % np.random.randn(1))
+    plt.savefig(path + 'model-v1.4.4(%.3f).png' % np.random.randn(1))
     plt.show()
 
 
@@ -235,7 +237,96 @@ def draw_scatter(x_training, y_training, z_training, x_testing, y_testing, z_tes
     ax.set_zlabel('Performance')
     ax.scatter(x_training, y_training, z_training, color='red', s=50)
     ax.scatter(x_testing, y_testing, z_testing)
-    plt.savefig(path + 'model-v1.4.3(%.3f).png' % np.random.randn(1))
+    plt.savefig(path + 'model-v1.4.4(%.3f).png' % np.random.randn(1))
+    plt.show()
+
+# 绘制相分数-性能关系图
+
+
+def draw_relation(x_training, y_training, x_testing, y_testing):
+    sns.set(font="Times New Roman", font_scale=1)
+    # UTS
+    fig1, ax1 = plt.subplots(2, 2, figsize=(16, 12))
+    # Al_1/UTS
+    ax1[0][0].set_xlabel('Al_1 / wt.%')
+    ax1[0][0].set_ylabel('UTS / MPa')
+    ax1[0][0].set_title('Al_1/UTS', fontstyle='oblique')
+    ax1[0][0].scatter(x_testing[:, 0], y_testing[:, 0])
+    ax1[0][0].scatter(x_training[:, 0], y_training[:, 0], color='red')
+    # Al_2/UTS
+    ax1[0][1].set_xlabel('Al_2 / wt.%')
+    ax1[0][1].set_ylabel('UTS / MPa')
+    ax1[0][1].set_title('Al_2/UTS', fontstyle='oblique')
+    ax1[0][1].scatter(x_testing[:, 1], y_testing[:, 0])
+    ax1[0][1].scatter(x_training[:, 1], y_training[:, 0], color='red')
+    # Si/UTS
+    ax1[1][0].set_xlabel('Si / wt.%')
+    ax1[1][0].set_ylabel('UTS / MPa')
+    ax1[1][0].set_title('Si/UTS', fontstyle='oblique')
+    ax1[1][0].scatter(x_testing[:, 2], y_testing[:, 0])
+    ax1[1][0].scatter(x_training[:, 2], y_training[:, 0], color='red')
+    # AlSc2Si2/UTS
+    ax1[1][1].set_xlabel('AlSc2Si2 / wt.%')
+    ax1[1][1].set_ylabel('UTS / MPa')
+    ax1[1][1].set_title('AlSc2Si2/UTS', fontstyle='oblique')
+    ax1[1][1].scatter(x_testing[:, 3], y_testing[:, 0])
+    ax1[1][1].scatter(x_training[:, 3], y_training[:, 0], color='red')
+    plt.savefig(path + 'UTS.png', bbox_inches='tight')
+    # YS
+    fig1, ax1 = plt.subplots(2, 2, figsize=(16, 12))
+    # Al_1/YS
+    ax1[0][0].set_xlabel('Al_1 / wt.%')
+    ax1[0][0].set_ylabel('YS / MPa')
+    ax1[0][0].set_title('Al_1/YS', fontstyle='oblique')
+    ax1[0][0].scatter(x_testing[:, 0], y_testing[:, 1])
+    ax1[0][0].scatter(x_training[:, 0], y_training[:, 1], color='red')
+    # Al_2/YS
+    ax1[0][1].set_xlabel('Al_2 / wt.%')
+    ax1[0][1].set_ylabel('YS / MPa')
+    ax1[0][1].set_title('Al_2/YS', fontstyle='oblique')
+    ax1[0][1].scatter(x_testing[:, 1], y_testing[:, 1])
+    ax1[0][1].scatter(x_training[:, 1], y_training[:, 1], color='red')
+    # Si/YS
+    ax1[1][0].set_xlabel('Si / wt.%')
+    ax1[1][0].set_ylabel('YS / MPa')
+    ax1[1][0].set_title('Si/YS', fontstyle='oblique')
+    ax1[1][0].scatter(x_testing[:, 2], y_testing[:, 1])
+    ax1[1][0].scatter(x_training[:, 2], y_training[:, 1], color='red')
+    # AlSc2Si2/YS
+    ax1[1][1].set_xlabel('AlSc2Si2 / wt.%')
+    ax1[1][1].set_ylabel('YS / MPa')
+    ax1[1][1].set_title('AlSc2Si2/YS', fontstyle='oblique')
+    ax1[1][1].scatter(x_testing[:, 3], y_testing[:, 1])
+    ax1[1][1].scatter(x_training[:, 3], y_training[:, 1], color='red')
+    plt.savefig(path + 'YS.png', bbox_inches='tight')
+    # EL
+    fig1, ax1 = plt.subplots(2, 2, figsize=(16, 12))
+    # Al_1/EL
+    ax1[0][0].set_xlabel('Al_1 / wt.%')
+    ax1[0][0].set_ylabel('EL / MPa')
+    ax1[0][0].set_title('Al_1/EL', fontstyle='oblique')
+    ax1[0][0].scatter(x_testing[:, 0], y_testing[:, 2])
+    ax1[0][0].scatter(x_training[:, 0], y_training[:, 2], color='red')
+    # Al_2/EL
+    ax1[0][1].set_xlabel('Al_2 / wt.%')
+    ax1[0][1].set_ylabel('EL / MPa')
+    ax1[0][1].set_title('Al_2/EL', fontstyle='oblique')
+    ax1[0][1].scatter(x_testing[:, 1], y_testing[:, 2])
+    ax1[0][1].scatter(x_training[:, 1], y_training[:, 2], color='red')
+    # Si/EL
+    ax1[1][0].set_xlabel('Si / wt.%')
+    ax1[1][0].set_ylabel('EL / MPa')
+    ax1[1][0].set_title('Si/EL', fontstyle='oblique')
+    ax1[1][0].scatter(x_testing[:, 2], y_testing[:, 2])
+    ax1[1][0].scatter(x_training[:, 2], y_training[:, 2], color='red')
+    # AlSc2Si2/EL
+    ax1[1][1].set_xlabel('AlSc2Si2 / wt.%')
+    ax1[1][1].set_ylabel('EL / MPa')
+    ax1[1][1].set_title('AlSc2Si2/EL', fontstyle='oblique')
+    ax1[1][1].scatter(x_testing[:, 3], y_testing[:, 2])
+    ax1[1][1].scatter(x_training[:, 3], y_training[:, 2], color='red')
+    plt.savefig(path + 'EL.png', bbox_inches='tight')
+
     plt.show()
 
 
@@ -257,7 +348,7 @@ def main():
 
     # 调用训练好的模型进行预测
     if not training_break:
-        model_path = path + 'model-v1.4.3.pkl'
+        model_path = path + 'model-v1.4.4.pkl'
         # 此处不需要跟踪梯度
         with torch.no_grad():
             y_testing = test(model_path, x_standarded_test)
@@ -275,8 +366,12 @@ def main():
                 draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_EL.numpy(),
                              EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy()[:, 2])
 
-                # 预测数据处理并进行可视化
-                data_process(path, EL_Si_test.numpy(), EL_Mg_test.numpy())
+                # 综合力学性能计算及可视化
+                # data_process(path, EL_Si_test.numpy(), EL_Mg_test.numpy())
+
+                # 绘制相分数-性能关系图
+                draw_relation(x.numpy(), y_list.numpy(),
+                              x_testing.numpy(), y_testing.numpy())
 
 
 if __name__ == '__main__':
