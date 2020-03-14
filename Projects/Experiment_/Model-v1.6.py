@@ -10,6 +10,7 @@
 #                output the coefficients                  #
 #                output the results                       #
 #                visualize the results                    #
+#                without bias                             #
 ###########################################################
 
 import os
@@ -33,10 +34,10 @@ loss_threashold_value = 1e-2
 e = torch.tensor([3, 3, 0.1]).float()
 error = e.repeat(6, 1)
 # 设置单次最大循环数
-loop_max = 100000
+loop_max = 1000000
 # 设置保存路径（带标记）
 index = np.random.randn(1)
-path = 'Projects/Experiment_/res/model-v1.5/%.3f/' % index
+path = 'Projects/Experiment_/res/model-v1.6/%.3f/' % index
 # 设置训练及测试数据路径
 training_data_file_path = 'Projects/Experiment_/res/Data/TrainingData.csv'
 testing_data_file_path = 'Projects/Experiment_/res/Data/TestingDataFiltered.csv'
@@ -46,9 +47,9 @@ testing_data_file_path = 'Projects/Experiment_/res/Data/TestingDataFiltered.csv'
 class Net(nn.Module):
     def __init__(self, n_feature, n_hidden1, n_hidden2, n_output):
         super(Net, self).__init__()
-        self.hidden1 = torch.nn.Linear(n_feature, n_hidden1)
-        self.hidden2 = torch.nn.Linear(n_hidden1, n_hidden2)
-        self.predict = torch.nn.Linear(n_hidden2, n_output)
+        self.hidden1 = torch.nn.Linear(n_feature, n_hidden1, bias=False)
+        self.hidden2 = torch.nn.Linear(n_hidden1, n_hidden2, bias=False)
+        self.predict = torch.nn.Linear(n_hidden2, n_output, bias=False)
 
     def forward(self, x):
         x = F.relu(self.hidden1(x))
@@ -143,38 +144,21 @@ def train(x, y):
     w_1 = net.hidden1.weight
     w_2 = net.hidden2.weight
     w_3 = net.predict.weight
-    b_1 = net.hidden1.bias
-    b_2 = net.hidden2.bias
-    b_3 = net.predict.bias
     general_w = (w_3.mm(w_2)).mm(w_1)
-    general_b = w_3.mm(w_2.mm(b_1.view(10, 1))) + \
-        w_3.mm(b_2.view(5, 1)) + b_3.view(3, 1)
     print('===================Training complete====================')
     print('Total time: %.2fs' % (end_time - start_time))
     print('layer1 weight ---> ', w_1)
-    print('layer1 bias ---> ', b_1)
     print('layer2 weight ---> ', w_2)
-    print('layer2 bias ---> ', b_2)
     print('layer3 weight ---> ', w_3)
-    print('layer3 bias ---> ', b_3)
     print('Total weight ---> \n', general_w)
-    print('Total bias ---> \n', general_b)
     np.savetxt(path + 'w_1.csv',
                w_1.detach().numpy(), fmt='%.3f', delimiter=',')
     np.savetxt(path + 'w_2.csv',
                w_2.detach().numpy(), fmt='%.3f', delimiter=',')
     np.savetxt(path + 'w_3.csv',
                w_3.detach().numpy(), fmt='%.3f', delimiter=',')
-    np.savetxt(path + 'b_1.csv',
-               b_1.detach().numpy(), fmt='%.3f', delimiter=',')
-    np.savetxt(path + 'b_2.csv',
-               b_2.detach().numpy(), fmt='%.3f', delimiter=',')
-    np.savetxt(path + 'b_3.csv',
-               b_3.detach().numpy(), fmt='%.3f', delimiter=',')
     np.savetxt(path + 'general_w.csv',
                general_w.detach().numpy(), fmt='%.3f', delimiter=',')
-    np.savetxt(path + 'general_b.csv', general_b.detach().numpy(),
-               fmt='%.3f', delimiter=',')
     plt.savefig(path + 'learning_curve.png')
     plt.show()
     return training_break
