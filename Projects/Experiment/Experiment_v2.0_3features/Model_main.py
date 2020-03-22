@@ -9,7 +9,7 @@
 
 import Model_train
 import Model_retrain
-import Model_progress
+import Model_process
 import Model_NN
 
 import torch
