@@ -34,6 +34,8 @@ def main(parameters_list):
     lower_limit = parameters_list[8]
     Net = parameters_list[9]
     features = parameters_list[10]
+    layer_1 = parameters_list[11]
+    layer_2 = parameters_list[12]
 
     # 定义获取测试数据函数
 
@@ -69,7 +71,7 @@ def main(parameters_list):
 
     def train(x, y):
         # 实例化神经网络
-        net = Net(n_feature=features, n_hidden1=10, n_hidden2=5, n_output=3)
+        net = Net(n_feature=features, n_hidden1=layer_1, n_hidden2=layer_2, n_output=3)
         # Adam优化器
         optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
         # 损失函数
@@ -123,41 +125,41 @@ def main(parameters_list):
             else:
                 os.makedirs(path)
             torch.save(net, path + 'model.pkl')
-            w_1 = net.hidden1.weight
-            w_2 = net.hidden2.weight
-            w_3 = net.predict.weight
-            b_1 = net.hidden1.bias
-            b_2 = net.hidden2.bias
-            b_3 = net.predict.bias
-            general_w = (w_3.mm(w_2)).mm(w_1)
-            general_b = w_3.mm(w_2.mm(b_1.view(10, 1))) + \
-                w_3.mm(b_2.view(5, 1)) + b_3.view(3, 1)
+            # w_1 = net.hidden1.weight
+            # w_2 = net.hidden2.weight
+            # w_3 = net.predict.weight
+            # b_1 = net.hidden1.bias
+            # b_2 = net.hidden2.bias
+            # b_3 = net.predict.bias
+            # general_w = (w_3.mm(w_2)).mm(w_1)
+            # general_b = w_3.mm(w_2.mm(b_1.view(10, 1))) + \
+            #     w_3.mm(b_2.view(5, 1)) + b_3.view(3, 1)
             print('===================Training complete====================')
             print('Total time: %.2fs' % (end_time - start_time))
-            print('Layer1 weight ---> ', w_1)
-            print('Layer1 bias ---> ', b_1)
-            print('Layer2 weight ---> ', w_2)
-            print('Layer2 bias ---> ', b_2)
-            print('Layer3 weight ---> ', w_3)
-            print('Layer3 bias ---> ', b_3)
-            print('General weight calculated from NN ---> \n', general_w)
-            print('General bias calculated from NN ---> \n', general_b)
-            np.savetxt(path + 'w_1.csv',
-                       w_1.detach().numpy(), fmt='%.3f', delimiter=',')
-            np.savetxt(path + 'w_2.csv',
-                       w_2.detach().numpy(), fmt='%.3f', delimiter=',')
-            np.savetxt(path + 'w_3.csv',
-                       w_3.detach().numpy(), fmt='%.3f', delimiter=',')
-            np.savetxt(path + 'b_1.csv',
-                       b_1.detach().numpy(), fmt='%.3f', delimiter=',')
-            np.savetxt(path + 'b_2.csv',
-                       b_2.detach().numpy(), fmt='%.3f', delimiter=',')
-            np.savetxt(path + 'b_3.csv',
-                       b_3.detach().numpy(), fmt='%.3f', delimiter=',')
-            np.savetxt(path + 'general_w.csv',
-                       general_w.detach().numpy(), fmt='%.3f', delimiter=',')
-            np.savetxt(path + 'general_b.csv', general_b.detach().numpy(),
-                       fmt='%.3f', delimiter=',')
+            # print('Layer1 weight ---> ', w_1)
+            # print('Layer1 bias ---> ', b_1)
+            # print('Layer2 weight ---> ', w_2)
+            # print('Layer2 bias ---> ', b_2)
+            # print('Layer3 weight ---> ', w_3)
+            # print('Layer3 bias ---> ', b_3)
+            # print('General weight calculated from NN ---> \n', general_w)
+            # print('General bias calculated from NN ---> \n', general_b)
+            # np.savetxt(path + 'w_1.csv',
+            #            w_1.detach().numpy(), fmt='%.3f', delimiter=',')
+            # np.savetxt(path + 'w_2.csv',
+            #            w_2.detach().numpy(), fmt='%.3f', delimiter=',')
+            # np.savetxt(path + 'w_3.csv',
+            #            w_3.detach().numpy(), fmt='%.3f', delimiter=',')
+            # np.savetxt(path + 'b_1.csv',
+            #            b_1.detach().numpy(), fmt='%.3f', delimiter=',')
+            # np.savetxt(path + 'b_2.csv',
+            #            b_2.detach().numpy(), fmt='%.3f', delimiter=',')
+            # np.savetxt(path + 'b_3.csv',
+            #            b_3.detach().numpy(), fmt='%.3f', delimiter=',')
+            # np.savetxt(path + 'general_w.csv',
+            #            general_w.detach().numpy(), fmt='%.3f', delimiter=',')
+            # np.savetxt(path + 'general_b.csv', general_b.detach().numpy(),
+            #            fmt='%.3f', delimiter=',')
             plt.savefig(path + 'learning_curve.png')
             plt.show()
 
