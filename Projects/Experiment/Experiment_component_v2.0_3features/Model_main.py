@@ -36,14 +36,13 @@ def main():
     train = input('Train or Not(Y/N)')
     if train.lower() == 'y':
         learning_rate = 1e-4
-        # loss_threashold_value = 1e-2
-        loss_threashold_value = 1e2
-        error = e.repeat(6, 1)
+        loss_threashold_value = 1e-2
         loop_max = 1e5
         index = np.random.randn(1)
         path = 'Projects/Experiment/Experiment_component_v2.0_3features/res/Train/%.3f/' % index
         train_start_index = 0
         train_end_index = 6
+        error = e.repeat(train_end_index, 1)
         upper_limit = 3
         lower_limit = -(upper_limit / 8) * 2
         train_parameters_list = [learning_rate, loss_threashold_value, error, loop_max, path,
@@ -61,13 +60,13 @@ def main():
     retrain = input('Retrain or Not(Y/N)')
     if retrain.lower() == 'y':
         re_learning_rate = 1e-4
-        re_error = e.repeat(7, 1)
         re_loss_threashold_value = 1e-2
         re_loop_max = 1e5
         re_index = np.random.randn(1)
         re_path = 'Projects/Experiment/Experiment_component_v2.0_3features/res/Retrain/%.3f/' % re_index
         train_start_index = 0
         train_end_index = 7
+        re_error = e.repeat(train_end_index, 1)
         re_upper_limit = 1
         re_lower_limit = -(re_upper_limit / 8) * 2
         old_model_path = 'Projects/Experiment/Experiment_component_v2.0_3features/res/Train/OriginModel_3(3-12-6-3)/model.pkl'
@@ -88,7 +87,7 @@ def main():
         pro_path = 'Projects/Experiment/Experiment_component_v2.0_3features/res/Process/%.3f/' % pro_index
         train_start_index = 0
         train_end_index = 8
-        model_path = 'Projects/Experiment/Experiment_component_v2.0_3features/res/Retrain/FromOriginModel_3/8data1e-2/model.pkl'
+        model_path = 'Projects/Experiment/Experiment_component_v2.0_3features/res/Train/OriginModel1/model.pkl'
         pro_parameters_list = [pro_path, train_start_index, train_end_index,
                                training_data_file_path, testing_data_file_path,
                                model_path]

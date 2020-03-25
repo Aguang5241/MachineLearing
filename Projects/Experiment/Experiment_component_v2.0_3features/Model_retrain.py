@@ -283,7 +283,7 @@ def main(parameters_list):
                                 testing_accuracy_YS, testing_accuracy_EL]
             # 预测
             y_predicting = predict(model_path, x_standarded_predict)
-            if np.isnan(y_testing.numpy().any()):
+            if np.isnan(y_predicting.numpy().any()):
                 print('==============Prediction run out of range===============')
             else:
                 print('==================Prediction complete===================')
