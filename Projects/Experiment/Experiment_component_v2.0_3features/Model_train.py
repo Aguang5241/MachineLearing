@@ -28,18 +28,20 @@ def main(parameters_list):
     error = parameters_list[2]
     loop_max = parameters_list[3]
     path = parameters_list[4]
-    training_data_file_path = parameters_list[5]
-    testing_data_file_path = parameters_list[6]
-    upper_limit = parameters_list[7]
-    lower_limit = parameters_list[8]
-    Net = parameters_list[9]
-    features = parameters_list[10]
-    layer_1 = parameters_list[11]
-    layer_2 = parameters_list[12]
+    train_start_index = parameters_list[5]
+    train_end_index = parameters_list[6]
+    training_data_file_path = parameters_list[7]
+    predicting_data_file_path = parameters_list[8]
+    upper_limit = parameters_list[9]
+    lower_limit = parameters_list[10]
+    Net = parameters_list[11]
+    features = parameters_list[12]
+    layer_1 = parameters_list[13]
+    layer_2 = parameters_list[14]
 
-    # 定义获取测试数据函数
+    # 定义获取预测数据函数
 
-    def get_testing_data(file_path):
+    def get_predicting_data(file_path):
         data = pd.read_csv(file_path)
         x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
         EL_Si = torch.unsqueeze(
@@ -48,12 +50,30 @@ def main(parameters_list):
             (torch.from_numpy(data['EL_Mg'].values)), dim=1).float()
         return x, EL_Si, EL_Mg
 
+    # 定义获取测试数据函数
+
+    def get_testing_data(file_path):
+        data = pd.read_csv(file_path)
+        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
+        y_UTS = torch.unsqueeze(
+            (torch.from_numpy(data['UTS'].values)), dim=1).float()
+        y_YS = torch.unsqueeze(
+            (torch.from_numpy(data['YS'].values)), dim=1).float()
+        y_EL = torch.unsqueeze(
+            (torch.from_numpy(data['EL'].values)), dim=1).float()
+        # print(y_*.shape) # (6, 1)
+        EL_Si = torch.unsqueeze(
+            (torch.from_numpy(data['EL_Si'].values)), dim=1).float()
+        EL_Mg = torch.unsqueeze(
+            (torch.from_numpy(data['EL_Mg'].values)), dim=1).float()
+        return x, y_UTS, y_YS, y_EL
+
     # 定义获取训练数据函数
 
     def get_training_data(file_path):
         data = pd.read_csv(file_path)
+        data = data.iloc[train_start_index:train_end_index, :]
         x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
-        # print(x.shape) # (6 ,4)
         y_UTS = torch.unsqueeze(
             (torch.from_numpy(data['UTS'].values)), dim=1).float()
         y_YS = torch.unsqueeze(
@@ -71,7 +91,8 @@ def main(parameters_list):
 
     def train(x, y):
         # 实例化神经网络
-        net = Net(n_feature=features, n_hidden1=layer_1, n_hidden2=layer_2, n_output=3)
+        net = Net(n_feature=features, n_hidden1=layer_1,
+                  n_hidden2=layer_2, n_output=3)
         # Adam优化器
         optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
         # 损失函数
@@ -167,16 +188,16 @@ def main(parameters_list):
 
     # 定义测试函数
 
-    def test(model_path, x):
+    def predict(model_path, x):
         net = torch.load(model_path)
         predict_y = net(x)
         pd.DataFrame(predict_y.numpy()).to_csv(
-            path + 'testing_results.csv', index=False, header=['UTS', 'YS', 'EL'])
+            path + 'predicting_results.csv', index=False, header=['UTS', 'YS', 'EL'])
         return predict_y
 
     # 绘制散点图
 
-    def draw_scatter(x_training, y_training, z_training, x_testing, y_testing, z_testing, item):
+    def draw_scatter(x_training, y_training, z_training, x_predicting, y_predicting, z_predicting, item, training_accuracy, testing_accuracy):
         if item == 'UTS / MPa':
             fig_name = 'UTS'
         elif item == 'YS / MPa':
@@ -186,11 +207,16 @@ def main(parameters_list):
         sns.set(font="Times New Roman", font_scale=1)
         fig = plt.figure()
         ax = Axes3D(fig)
+        ax.set_title('                    Training accuracy: %.2f %%  Testing accuracy: %.2f %%' % (
+            training_accuracy * 100, testing_accuracy * 100))
         ax.set_xlabel('Si')
         ax.set_ylabel('Mg')
         ax.set_zlabel(item)
-        ax.scatter(x_training, y_training, z_training, color='red', s=50)
-        ax.scatter(x_testing, y_testing, z_testing)
+        ax.scatter(x_training, y_training, z_training,
+                   color='red', s=50, label='Training data')
+        ax.scatter(x_predicting, y_predicting,
+                   z_predicting, label='Predicting data')
+        ax.legend(loc='upper left')
         plt.savefig(path + 'elements_%s.png' % fig_name)
         plt.show()
 
@@ -198,40 +224,72 @@ def main(parameters_list):
 
     x, y_UTS, y_YS, y_EL, EL_Si, EL_Mg = get_training_data(
         training_data_file_path)
-    x_testing, EL_Si_test, EL_Mg_test = get_testing_data(
-        testing_data_file_path)
+    x_testing, y_UTS_testing, y_YS_testing, y_EL_testing = get_testing_data(
+        training_data_file_path)
+    x_predicting, EL_Si_predicting, EL_Mg_predicting = get_predicting_data(
+        predicting_data_file_path)
 
     # 执行正则化，并记住训练集数据的正则化规则,运用于测试集数据
 
     x_scaler = StandardScaler().fit(x)
     x_standarded = torch.from_numpy(x_scaler.transform(x)).float()
-    x_standarded_test = torch.from_numpy(x_scaler.transform(x_testing)).float()
+    x_standarded_test = torch.from_numpy(
+        x_scaler.transform(x_testing)).float()
+    x_standarded_predict = torch.from_numpy(
+        x_scaler.transform(x_predicting)).float()
 
     # 执行模型训练
 
     y_list = torch.cat((y_UTS, y_YS, y_EL), 1)
+    y_testing_list = torch.cat((y_UTS_testing, y_YS_testing, y_EL_testing), 1)
     training_break = train(x_standarded, y_list)
 
-    # 调用训练好的模型进行预测
-
+    # 调用训练好的模型进行评估与预测
     if not training_break:
         model_path = path + 'model.pkl'
         # 此处不需要跟踪梯度
         with torch.no_grad():
-            y_testing = test(model_path, x_standarded_test)
-            if np.isnan(y_testing.numpy().any()):
+            # 评估
+            y_testing = predict(model_path, x_standarded_test)
+            y_training = predict(model_path, x_standarded)
+            accuracy_func = torch.nn.L1Loss()
+            training_accuracy_UTS = 1 - \
+                (accuracy_func(
+                    y_training[:, 0], y_list[:, 0]) / torch.mean(y_list[:, 0])).item()
+            training_accuracy_YS = 1 - \
+                (accuracy_func(
+                    y_training[:, 1], y_list[:, 1]) / torch.mean(y_list[:, 1])).item()
+            training_accuracy_EL = 1 - \
+                (accuracy_func(
+                    y_training[:, 2], y_list[:, 2]) / torch.mean(y_list[:, 2])).item()
+            training_accuracy = [training_accuracy_UTS,
+                                 training_accuracy_YS, training_accuracy_EL]
+            testing_accuracy_UTS = 1 - \
+                (accuracy_func(
+                    y_testing[:, 0], y_testing_list[:, 0]) / torch.mean(y_testing_list[:, 0])).item()
+            testing_accuracy_YS = 1 - \
+                (accuracy_func(
+                    y_testing[:, 1], y_testing_list[:, 1]) / torch.mean(y_testing_list[:, 1])).item()
+            testing_accuracy_EL = 1 - \
+                (accuracy_func(
+                    y_testing[:, 2], y_testing_list[:, 2]) / torch.mean(y_testing_list[:, 2])).item()
+            testing_accuracy = [testing_accuracy_UTS,
+                                testing_accuracy_YS, testing_accuracy_EL]
+            # 预测
+            y_predicting = predict(model_path, x_standarded_predict)
+            if np.isnan(y_predicting.numpy().any()):
                 print('==============Prediction run out of range===============')
             else:
                 print('==================Prediction complete===================')
 
                 # 数据可视化(散点图)
                 draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_UTS.numpy(),
-                             EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy()[:, 0], 'UTS / MPa')
+                             EL_Si_predicting.numpy(), EL_Mg_predicting.numpy(), y_predicting.numpy()[:, 0], 'UTS / MPa', training_accuracy[0], testing_accuracy[0])
                 draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_YS.numpy(),
-                             EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy()[:, 1], 'YS / MPa')
+                             EL_Si_predicting.numpy(), EL_Mg_predicting.numpy(), y_predicting.numpy()[:, 1], 'YS / MPa', training_accuracy[1], testing_accuracy[1])
                 draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_EL.numpy(),
-                             EL_Si_test.numpy(), EL_Mg_test.numpy(), y_testing.numpy()[:, 2], 'EL / %')
-    
+                             EL_Si_predicting.numpy(), EL_Mg_predicting.numpy(), y_predicting.numpy()[:, 2], 'EL / %', training_accuracy[2], testing_accuracy[2])
+
     return training_break
 
 

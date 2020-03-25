@@ -26,14 +26,17 @@ def main(parameters_list):
         pass
     else:
         os.makedirs(path)
-    training_data_file_path = parameters_list[1]
-    testing_data_file_path = parameters_list[2]
-    model_path = parameters_list[3]
+    train_start_index = parameters_list[1]
+    train_end_index = parameters_list[2]
+    training_data_file_path = parameters_list[3]
+    testing_data_file_path = parameters_list[4]
+    model_path = parameters_list[5]
 
     # 定义获取训练数据函数
 
     def get_training_data(file_path):
         data = pd.read_csv(file_path)
+        data = data.iloc[train_start_index:train_end_index, :]
         x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
         y_UTS = torch.unsqueeze(
             (torch.from_numpy(data['UTS'].values)), dim=1).float()
