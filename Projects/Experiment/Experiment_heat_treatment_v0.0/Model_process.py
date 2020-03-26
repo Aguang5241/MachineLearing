@@ -1,12 +1,3 @@
-###########################################################
-#                net shape: n-10-5-3                      #
-#                layer function: Linear                   #
-#                standard: True                           #
-#                activation function: ReLU                #
-#                loss function: MSELoss                   #
-#                optimizer: Adam                          #
-###########################################################
-
 import os
 import matplotlib.pyplot as plt
 import numpy as np

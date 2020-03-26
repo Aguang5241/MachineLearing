@@ -14,7 +14,6 @@ from sklearn.preprocessing import StandardScaler
 def main(parameters_list):
 
     # 初始化参数
-
     learning_rate = parameters_list[0]
     loss_threashold_value = parameters_list[1]
     error = parameters_list[2]
@@ -30,35 +29,27 @@ def main(parameters_list):
     features = parameters_list[12]
     layer_1 = parameters_list[13]
     layer_2 = parameters_list[14]
-    old_model_path = parameters_list[15]
 
     # 定义获取预测数据函数
 
     def get_predicting_data(file_path):
         data = pd.read_csv(file_path)
-        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
-        EL_Si = torch.unsqueeze(
-            (torch.from_numpy(data['EL_Si'].values)), dim=1).float()
-        EL_Mg = torch.unsqueeze(
-            (torch.from_numpy(data['EL_Mg'].values)), dim=1).float()
-        return x, EL_Si, EL_Mg
+        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSi2Sr'].values).float()
+        EL_Sr = torch.unsqueeze(
+            (torch.from_numpy(data['EL_Sr'].values)), dim=1).float()
+        return x, EL_Sr
 
     # 定义获取测试数据函数
 
     def get_testing_data(file_path):
         data = pd.read_csv(file_path)
-        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
+        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSi2Sr'].values).float()
         y_UTS = torch.unsqueeze(
             (torch.from_numpy(data['UTS'].values)), dim=1).float()
         y_YS = torch.unsqueeze(
             (torch.from_numpy(data['YS'].values)), dim=1).float()
         y_EL = torch.unsqueeze(
             (torch.from_numpy(data['EL'].values)), dim=1).float()
-        # print(y_*.shape) # (6, 1)
-        EL_Si = torch.unsqueeze(
-            (torch.from_numpy(data['EL_Si'].values)), dim=1).float()
-        EL_Mg = torch.unsqueeze(
-            (torch.from_numpy(data['EL_Mg'].values)), dim=1).float()
         return x, y_UTS, y_YS, y_EL
 
     # 定义获取训练数据函数
@@ -66,29 +57,23 @@ def main(parameters_list):
     def get_training_data(file_path):
         data = pd.read_csv(file_path)
         data = data.iloc[train_start_index:train_end_index, :]
-        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
+        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSi2Sr'].values).float()
         y_UTS = torch.unsqueeze(
             (torch.from_numpy(data['UTS'].values)), dim=1).float()
         y_YS = torch.unsqueeze(
             (torch.from_numpy(data['YS'].values)), dim=1).float()
         y_EL = torch.unsqueeze(
             (torch.from_numpy(data['EL'].values)), dim=1).float()
-        # print(y_*.shape) # (6, 1)
-        EL_Si = torch.unsqueeze(
-            (torch.from_numpy(data['EL_Si'].values)), dim=1).float()
-        EL_Mg = torch.unsqueeze(
-            (torch.from_numpy(data['EL_Mg'].values)), dim=1).float()
-        return x, y_UTS, y_YS, y_EL, EL_Si, EL_Mg
+        EL_Sr = torch.unsqueeze(
+            (torch.from_numpy(data['EL_Sr'].values)), dim=1).float()
+        return x, y_UTS, y_YS, y_EL, EL_Sr
 
     # 定义训练函数
 
-    def train(x, y, old_model_path):
+    def train(x, y):
         # 实例化神经网络
         net = Net(n_feature=features, n_hidden1=layer_1,
                   n_hidden2=layer_2, n_output=3)
-        # 加载模型
-        old_model_dict = torch.load(old_model_path).state_dict()
-        net.load_state_dict(old_model_dict)
         # Adam优化器
         optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
         # 损失函数
@@ -193,36 +178,36 @@ def main(parameters_list):
 
     # 绘制散点图
 
-    def draw_scatter(x_training, y_training, z_training, x_predicting, y_predicting, z_predicting, item, training_accuracy, testing_accuracy):
+    def draw_scatter(x_training, y_training, x_predicting, y_predicting, item, training_accuracy, testing_accuracy):
         if item == 'UTS / MPa':
             fig_name = 'UTS'
         elif item == 'YS / MPa':
             fig_name = 'YS'
         else:
             fig_name = 'EL'
+        max_indexes = np.argpartition(y_predicting, -2)[-2:]
         sns.set(font="Times New Roman", font_scale=1)
         fig = plt.figure()
-        ax = Axes3D(fig)
-        ax.set_title('                    Training accuracy: %.2f %%  Testing accuracy: %.2f %%' % (
+        ax = plt.subplot()
+        ax.set_title('Training accuracy: %.2f %%  Testing accuracy: %.2f %%' % (
             training_accuracy * 100, testing_accuracy * 100))
-        ax.set_xlabel('Si')
-        ax.set_ylabel('Mg')
-        ax.set_zlabel(item)
-        ax.scatter(x_training, y_training, z_training,
-                   color='red', s=50, label='Training data')
-        ax.scatter(x_predicting, y_predicting,
-                   z_predicting, label='Predicting data')
-        ax.legend(loc='upper left')
+        ax.set_xlabel('Sr / wt. %')
+        ax.set_ylabel(item)
+        ax.scatter(x_predicting, y_predicting, label='Predicting data')
+        ax.scatter(x_training, y_training, color='red',
+                   s=50, label='Training data')
+        ax.scatter(x_predicting[max_indexes], y_predicting[max_indexes])
+        ax.legend(loc='upper right')
         plt.savefig(path + 'elements_%s.png' % fig_name)
         plt.show()
 
     # 获取数据
 
-    x, y_UTS, y_YS, y_EL, EL_Si, EL_Mg = get_training_data(
+    x, y_UTS, y_YS, y_EL, EL_Sr = get_training_data(
         training_data_file_path)
     x_testing, y_UTS_testing, y_YS_testing, y_EL_testing = get_testing_data(
         training_data_file_path)
-    x_predicting, EL_Si_predicting, EL_Mg_predicting = get_predicting_data(
+    x_predicting, EL_Sr_predicting = get_predicting_data(
         predicting_data_file_path)
 
     # 执行正则化，并记住训练集数据的正则化规则,运用于测试集数据
@@ -238,10 +223,9 @@ def main(parameters_list):
 
     y_list = torch.cat((y_UTS, y_YS, y_EL), 1)
     y_testing_list = torch.cat((y_UTS_testing, y_YS_testing, y_EL_testing), 1)
-    training_break = train(x_standarded, y_list, old_model_path)
+    training_break = train(x_standarded, y_list)
 
-    # 调用训练好的模型进行预测
-
+    # 调用训练好的模型进行评估与预测
     if not training_break:
         model_path = path + 'model.pkl'
         # 此处不需要跟踪梯度
@@ -280,12 +264,19 @@ def main(parameters_list):
                 print('==================Prediction complete===================')
 
                 # 数据可视化(散点图)
-                draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_UTS.numpy(),
-                             EL_Si_predicting.numpy(), EL_Mg_predicting.numpy(), y_predicting.numpy()[:, 0], 'UTS / MPa', training_accuracy[0], testing_accuracy[0])
-                draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_YS.numpy(),
-                             EL_Si_predicting.numpy(), EL_Mg_predicting.numpy(), y_predicting.numpy()[:, 1], 'YS / MPa', training_accuracy[1], testing_accuracy[1])
-                draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_EL.numpy(),
-                             EL_Si_predicting.numpy(), EL_Mg_predicting.numpy(), y_predicting.numpy()[:, 2], 'EL / %', training_accuracy[2], testing_accuracy[2])
+                draw_scatter(EL_Sr.numpy(), y_UTS.numpy(),
+                             EL_Sr_predicting.numpy(),
+                             y_predicting.numpy()[:, 0],
+                             'UTS / MPa', training_accuracy[0], testing_accuracy[0])
+                draw_scatter(EL_Sr.numpy(), y_YS.numpy(),
+                             EL_Sr_predicting.numpy(),
+                             y_predicting.numpy()[:, 1],
+                             'YS / MPa', training_accuracy[1], testing_accuracy[1])
+                draw_scatter(EL_Sr.numpy(), y_EL.numpy(),
+                             EL_Sr_predicting.numpy(),
+                             y_predicting.numpy()[:, 2],
+                             'EL / %', training_accuracy[2], testing_accuracy[2])
+
     return training_break
 
 

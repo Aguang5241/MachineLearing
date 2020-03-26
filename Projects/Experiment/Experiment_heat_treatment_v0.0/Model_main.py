@@ -1,5 +1,5 @@
 ###########################################################
-#                net shape: n-10-5-3                      #
+#                net shape: n-12-6-3                      #
 #                layer function: Linear                   #
 #                standard: True                           #
 #                activation function: ReLU                #
