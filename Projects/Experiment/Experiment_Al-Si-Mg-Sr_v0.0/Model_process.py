@@ -27,29 +27,22 @@ def main(parameters_list):
 
     def get_predicting_data(file_path):
         data = pd.read_csv(file_path)
-        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
-        EL_Si = torch.unsqueeze(
+        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSi2Sr'].values).float()
+        EL_Sr = torch.unsqueeze(
             (torch.from_numpy(data['EL_Si'].values)), dim=1).float()
-        EL_Mg = torch.unsqueeze(
-            (torch.from_numpy(data['EL_Mg'].values)), dim=1).float()
-        return x, EL_Si, EL_Mg
+        return x, EL_Sr
 
     # 定义获取测试数据函数
 
     def get_testing_data(file_path):
         data = pd.read_csv(file_path)
-        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
+        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSi2Sr'].values).float()
         y_UTS = torch.unsqueeze(
             (torch.from_numpy(data['UTS'].values)), dim=1).float()
         y_YS = torch.unsqueeze(
             (torch.from_numpy(data['YS'].values)), dim=1).float()
         y_EL = torch.unsqueeze(
             (torch.from_numpy(data['EL'].values)), dim=1).float()
-        # print(y_*.shape) # (6, 1)
-        EL_Si = torch.unsqueeze(
-            (torch.from_numpy(data['EL_Si'].values)), dim=1).float()
-        EL_Mg = torch.unsqueeze(
-            (torch.from_numpy(data['EL_Mg'].values)), dim=1).float()
         return x, y_UTS, y_YS, y_EL
 
     # 定义获取训练数据函数
@@ -57,19 +50,16 @@ def main(parameters_list):
     def get_training_data(file_path):
         data = pd.read_csv(file_path)
         data = data.iloc[train_start_index:train_end_index, :]
-        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
+        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSi2Sr'].values).float()
         y_UTS = torch.unsqueeze(
             (torch.from_numpy(data['UTS'].values)), dim=1).float()
         y_YS = torch.unsqueeze(
             (torch.from_numpy(data['YS'].values)), dim=1).float()
         y_EL = torch.unsqueeze(
             (torch.from_numpy(data['EL'].values)), dim=1).float()
-        # print(y_*.shape) # (6, 1)
-        EL_Si = torch.unsqueeze(
+        EL_Sr = torch.unsqueeze(
             (torch.from_numpy(data['EL_Si'].values)), dim=1).float()
-        EL_Mg = torch.unsqueeze(
-            (torch.from_numpy(data['EL_Mg'].values)), dim=1).float()
-        return x, y_UTS, y_YS, y_EL, EL_Si, EL_Mg
+        return x, y_UTS, y_YS, y_EL, EL_Sr
 
     # 定义测试函数
 
@@ -118,7 +108,7 @@ def main(parameters_list):
 
     # 绘制散点图
 
-    def draw_scatter(x_training, y_training, z_training, x_predicting, y_predicting, z_predicting, item, training_accuracy, testing_accuracy):
+    def draw_scatter(x_training, y_training, x_predicting, y_predicting, item, training_accuracy, testing_accuracy):
         if item == 'UTS / MPa':
             fig_name = 'UTS'
         elif item == 'YS / MPa':
@@ -127,17 +117,15 @@ def main(parameters_list):
             fig_name = 'EL'
         sns.set(font="Times New Roman", font_scale=1)
         fig = plt.figure()
-        ax = Axes3D(fig)
-        ax.set_title('                    Training accuracy: %.2f %%  Testing accuracy: %.2f %%' % (
+        ax = plt.subplot()
+        ax.set_title('Training accuracy: %.2f %%  Testing accuracy: %.2f %%' % (
             training_accuracy * 100, testing_accuracy * 100))
-        ax.set_xlabel('Si')
-        ax.set_ylabel('Mg')
-        ax.set_zlabel(item)
-        ax.scatter(x_training, y_training, z_training,
+        ax.set_xlabel('Sr / MPa')
+        ax.set_ylabel(item)
+        ax.scatter(x_predicting, y_predicting, label='Predicting data')
+        ax.scatter(x_training, y_training,
                    color='red', s=50, label='Training data')
-        ax.scatter(x_predicting, y_predicting,
-                   z_predicting, label='Predicting data')
-        ax.legend(loc='upper left')
+        ax.legend(loc='upper right')
         plt.savefig(path + 'elements_%s.png' % fig_name)
         # plt.show()
 
@@ -151,159 +139,207 @@ def main(parameters_list):
 
     def draw_relation(x_training, y_training, x_testing, y_testing):
         sns.set(font="Times New Roman", font_scale=1)
-        x_Al_1 = np.linspace(0, 0.8, 100)
-        x_Al_2_Si = np.linspace(0.1, 0.9, 100)
-        x_AlSc2Si2 = np.linspace(0, 0.02, 100)
+        x_Al_1 = np.linspace(0.305, 0.508, 100)
+        x_Al_2 = np.linspace(0, 0.401, 100)
+        x_Si = np.linspace(0.046, 0.053, 100)
+        x_AlSi2Sr = np.linspace(0, 0.0023, 100)
         # UTS
-        fig1, ax1 = plt.subplots(1, 3, figsize=(18, 4.5))
+        fig1, ax1 = plt.subplots(2, 2, figsize=(16, 12))
         # Al_1/UTS
-        ax1[0].set_xlabel('Al_1 / wt.%')
-        ax1[0].set_ylabel('UTS / MPa')
-        ax1[0].set_title('Al_1 / UTS', fontstyle='oblique')
-        ax1[0].scatter(x_testing[:, 0], y_testing[:, 0],
-                       label='Testing data')
-        ax1[0].scatter(x_training[:, 0], y_training[:, 0],
-                       label='Training data')
-        fitting_w_10, fitting_b_10 = linear_fitting(x_testing[:, 0],
-                                                    y_testing[:, 0])
-        ax1[0].plot(x_Al_1, fitting_w_10 * x_Al_1 + fitting_b_10, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_10, fitting_w_10))
-        ax1[0].legend()
+        ax1[0][0].set_xlabel('Al_1 / wt.%')
+        ax1[0][0].set_ylabel('UTS / MPa')
+        ax1[0][0].set_title('Al_1 / UTS', fontstyle='oblique')
+        ax1[0][0].scatter(x_testing[:, 0], y_testing[:, 0],
+                          label='Testing data')
+        ax1[0][0].scatter(x_training[:, 0], y_training[:, 0],
+                          label='Training data')
+        fitting_w_100, fitting_b_100 = linear_fitting(x_testing[:, 0],
+                                                      y_testing[:, 0])
+        ax1[0][0].plot(x_Al_1, fitting_w_100 * x_Al_1 + fitting_b_100, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_100, fitting_w_100))
+        ax1[0][0].legend()
         # Al_2/UTS
-        ax1[1].set_xlabel('Al_2 + Si / wt.%')
-        ax1[1].set_ylabel('UTS / MPa')
-        ax1[1].set_title('Al_2 + Si / UTS', fontstyle='oblique')
-        ax1[1].scatter(x_testing[:, 1], y_testing[:, 0],
-                       label='Testing data')
-        ax1[1].scatter(x_training[:, 1], y_training[:, 0],
-                       label='Training data')
-        fitting_w_11, fitting_b_11 = linear_fitting(x_testing[:, 1],
-                                                    y_testing[:, 0])
-        ax1[1].plot(x_Al_2_Si, fitting_w_11 * x_Al_2_Si + fitting_b_11, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_11, fitting_w_11))
-        ax1[1].legend()
-        # AlSc2Si2/UTS
-        ax1[2].set_xlabel('AlSc2Si2 / wt.%')
-        ax1[2].set_ylabel('UTS / MPa')
-        ax1[2].set_title('AlSc2Si2 / UTS', fontstyle='oblique')
-        ax1[2].scatter(x_testing[:, 2], y_testing[:, 0],
-                       label='Testing data')
-        ax1[2].scatter(x_training[:, 2], y_training[:, 0],
-                       label='Training data')
-        fitting_w_12, fitting_b_12 = linear_fitting(x_testing[:, 2],
-                                                    y_testing[:, 0])
-        ax1[2].plot(x_AlSc2Si2, fitting_w_12 * x_AlSc2Si2 + fitting_b_12, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_12, fitting_w_12))
-        ax1[2].legend()
+        ax1[0][1].set_xlabel('Al_2 / wt.%')
+        ax1[0][1].set_ylabel('UTS / MPa')
+        ax1[0][1].set_title('Al_2 / UTS', fontstyle='oblique')
+        ax1[0][1].scatter(x_testing[:, 1], y_testing[:, 0],
+                          label='Testing data')
+        ax1[0][1].scatter(x_training[:, 1], y_training[:, 0],
+                          label='Training data')
+        fitting_w_101, fitting_b_101 = linear_fitting(x_testing[:, 1],
+                                                      y_testing[:, 0])
+        ax1[0][1].plot(x_Al_2, fitting_w_101 * x_Al_2 + fitting_b_101, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_101, fitting_w_101))
+        ax1[0][1].legend()
+        # Si/UTS
+        ax1[1][0].set_xlabel('Si / wt.%')
+        ax1[1][0].set_ylabel('UTS / MPa')
+        ax1[1][0].set_title('Si / UTS', fontstyle='oblique')
+        ax1[1][0].scatter(x_testing[:, 2], y_testing[:, 0],
+                          label='Testing data')
+        ax1[1][0].scatter(x_training[:, 2], y_training[:, 0],
+                          label='Training data')
+        fitting_w_110, fitting_b_110 = linear_fitting(x_testing[:, 2],
+                                                      y_testing[:, 0])
+        ax1[1][0].plot(x_Si, fitting_w_110 * x_Si + fitting_b_110, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_110, fitting_w_110))
+        ax1[1][0].legend()
+        # AlSi2Sr/UTS
+        ax1[1][1].set_xlabel('AlSi2Sr / wt.%')
+        ax1[1][1].set_ylabel('UTS / MPa')
+        ax1[1][1].set_title('AlSi2Sr / UTS', fontstyle='oblique')
+        ax1[1][1].scatter(x_testing[:, 3], y_testing[:, 0],
+                          label='Testing data')
+        ax1[1][1].scatter(x_training[:, 3], y_training[:, 0],
+                          label='Training data')
+        fitting_w_111, fitting_b_111 = linear_fitting(x_testing[:, 3],
+                                                      y_testing[:, 0])
+        ax1[1][1].plot(x_AlSi2Sr, fitting_w_111 * x_AlSi2Sr + fitting_b_111, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_111, fitting_w_111))
+        ax1[1][1].legend()
         plt.savefig(path + 'phase_UTS.png', bbox_inches='tight')
         # YS
-        fig2, ax2 = plt.subplots(1, 3, figsize=(18, 4.5))
+        fig2, ax2 = plt.subplots(2, 2, figsize=(16, 12))
         # Al_1/YS
-        ax2[0].set_xlabel('Al_1 / wt.%')
-        ax2[0].set_ylabel('YS / MPa')
-        ax2[0].set_title('Al_1 / YS', fontstyle='oblique')
-        ax2[0].scatter(x_testing[:, 0], y_testing[:, 1],
-                       label='Testing data')
-        ax2[0].scatter(x_training[:, 0], y_training[:, 1],
-                       label='Training data')
-        fitting_w_20, fitting_b_20 = linear_fitting(x_testing[:, 0],
-                                                    y_testing[:, 1])
-        ax2[0].plot(x_Al_1, fitting_w_20 * x_Al_1 + fitting_b_20, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_20, fitting_w_20))
-        ax2[0].legend(loc='upper left')
+        ax2[0][0].set_xlabel('Al_1 / wt.%')
+        ax2[0][0].set_ylabel('YS / MPa')
+        ax2[0][0].set_title('Al_1 / YS', fontstyle='oblique')
+        ax2[0][0].scatter(x_testing[:, 0], y_testing[:, 1],
+                          label='Testing data')
+        ax2[0][0].scatter(x_training[:, 0], y_training[:, 1],
+                          label='Training data')
+        fitting_w_200, fitting_b_200 = linear_fitting(x_testing[:, 0],
+                                                      y_testing[:, 1])
+        ax2[0][0].plot(x_Al_1, fitting_w_200 * x_Al_1 + fitting_b_200, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_200, fitting_w_200))
+        ax2[0][0].legend(loc='upper left')
         # Al_2/YS
-        ax2[1].set_xlabel('Al_2 + Si / wt.%')
-        ax2[1].set_ylabel('YS / MPa')
-        ax2[1].set_title('Al_2 + Si / YS', fontstyle='oblique')
-        ax2[1].scatter(x_testing[:, 1], y_testing[:, 1],
-                       label='Testing data')
-        ax2[1].scatter(x_training[:, 1], y_training[:, 1],
-                       label='Training data')
-        fitting_w_21, fitting_b_21 = linear_fitting(x_testing[:, 1],
-                                                    y_testing[:, 1])
-        ax2[1].plot(x_Al_2_Si, fitting_w_21 * x_Al_2_Si + fitting_b_21, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_21, fitting_w_21))
-        ax2[1].legend(loc='upper left')
-        # AlSc2Si2/YS
-        ax2[2].set_xlabel('AlSc2Si2 / wt.%')
-        ax2[2].set_ylabel('YS / MPa')
-        ax2[2].set_title('AlSc2Si2 / YS', fontstyle='oblique')
-        ax2[2].scatter(x_testing[:, 2], y_testing[:, 1],
-                       label='Testing data')
-        ax2[2].scatter(x_training[:, 2], y_training[:, 1],
-                       label='Training data')
-        fitting_w_22, fitting_b_22 = linear_fitting(x_testing[:, 2],
-                                                    y_testing[:, 1])
-        ax2[2].plot(x_AlSc2Si2, fitting_w_22 * x_AlSc2Si2 + fitting_b_22, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_22, fitting_w_22))
-        ax2[2].legend(loc='upper left')
+        ax2[0][1].set_xlabel('Al_2 / wt.%')
+        ax2[0][1].set_ylabel('YS / MPa')
+        ax2[0][1].set_title('Al_2 / YS', fontstyle='oblique')
+        ax2[0][1].scatter(x_testing[:, 1], y_testing[:, 1],
+                          label='Testing data')
+        ax2[0][1].scatter(x_training[:, 1], y_training[:, 1],
+                          label='Training data')
+        fitting_w_201, fitting_b_201 = linear_fitting(x_testing[:, 1],
+                                                      y_testing[:, 1])
+        ax2[0][1].plot(x_Al_2, fitting_w_201 * x_Al_2 + fitting_b_201, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_201, fitting_w_201))
+        ax2[0][1].legend(loc='upper left')
+        # Si/YS
+        ax2[1][0].set_xlabel('Si / wt.%')
+        ax2[1][0].set_ylabel('YS / MPa')
+        ax2[1][0].set_title('Si / YS', fontstyle='oblique')
+        ax2[1][0].scatter(x_testing[:, 2], y_testing[:, 1],
+                          label='Testing data')
+        ax2[1][0].scatter(x_training[:, 2], y_training[:, 1],
+                          label='Training data')
+        fitting_w_210, fitting_b_210 = linear_fitting(x_testing[:, 2],
+                                                      y_testing[:, 1])
+        ax2[1][0].plot(x_Si, fitting_w_210 * x_Si + fitting_b_210, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_210, fitting_w_210))
+        ax2[1][0].legend(loc='upper left')
+        # AlSi2Sr/YS
+        ax2[1][1].set_xlabel('AlSi2Sr / wt.%')
+        ax2[1][1].set_ylabel('YS / MPa')
+        ax2[1][1].set_title('AlSi2Sr / YS', fontstyle='oblique')
+        ax2[1][1].scatter(x_testing[:, 3], y_testing[:, 1],
+                          label='Testing data')
+        ax2[1][1].scatter(x_training[:, 3], y_training[:, 1],
+                          label='Training data')
+        fitting_w_211, fitting_b_211 = linear_fitting(x_testing[:, 3],
+                                                      y_testing[:, 1])
+        ax2[1][1].plot(x_AlSi2Sr, fitting_w_211 * x_AlSi2Sr + fitting_b_211, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_211, fitting_w_211))
+        ax2[1][1].legend(loc='upper left')
         plt.savefig(path + 'phase_YS.png', bbox_inches='tight')
         # EL
-        fig3, ax3 = plt.subplots(1, 3, figsize=(18, 4.5))
+        fig3, ax3 = plt.subplots(2, 2, figsize=(16, 12))
         # Al_1/EL
-        ax3[0].set_xlabel('Al_1 / wt.%')
-        ax3[0].set_ylabel('EL / %')
-        ax3[0].set_title('Al_1 / EL', fontstyle='oblique')
-        ax3[0].scatter(x_testing[:, 0], y_testing[:, 2],
-                       label='Testing data')
-        ax3[0].scatter(x_training[:, 0], y_training[:, 2],
-                       label='Training data')
-        fitting_w_30, fitting_b_30 = linear_fitting(x_testing[:, 0],
-                                                    y_testing[:, 2])
-        ax3[0].plot(x_Al_1, fitting_w_30 * x_Al_1 + fitting_b_30, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_30, fitting_w_30))
-        ax3[0].legend()
+        ax3[0][0].set_xlabel('Al_1 / wt.%')
+        ax3[0][0].set_ylabel('EL / %')
+        ax3[0][0].set_title('Al_1 / EL', fontstyle='oblique')
+        ax3[0][0].scatter(x_testing[:, 0], y_testing[:, 2],
+                          label='Testing data')
+        ax3[0][0].scatter(x_training[:, 0], y_training[:, 2],
+                          label='Training data')
+        fitting_w_300, fitting_b_300 = linear_fitting(x_testing[:, 0],
+                                                      y_testing[:, 2])
+        ax3[0][0].plot(x_Al_1, fitting_w_300 * x_Al_1 + fitting_b_300, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_300, fitting_w_300))
+        ax3[0][0].legend()
         # Al_2/EL
-        ax3[1].set_xlabel('Al_2 + Si / wt.%')
-        ax3[1].set_ylabel('EL / %')
-        ax3[1].set_title('Al_2 + Si / EL', fontstyle='oblique')
-        ax3[1].scatter(x_testing[:, 1], y_testing[:, 2],
-                       label='Testing data')
-        ax3[1].scatter(x_training[:, 1], y_training[:, 2],
-                       label='Training data')
-        fitting_w_31, fitting_b_31 = linear_fitting(x_testing[:, 1],
-                                                    y_testing[:, 2])
-        ax3[1].plot(x_Al_2_Si, fitting_w_31 * x_Al_2_Si + fitting_b_31, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_31, fitting_w_31))
-        ax3[1].legend()
-        # AlSc2Si2/EL
-        ax3[2].set_xlabel('AlSc2Si2 / wt.%')
-        ax3[2].set_ylabel('EL / %')
-        ax3[2].set_title('AlSc2Si2 / EL', fontstyle='oblique')
-        ax3[2].scatter(x_testing[:, 2], y_testing[:, 2],
-                       label='Testing data')
-        ax3[2].scatter(x_training[:, 2], y_training[:, 2],
-                       label='Training data')
-        fitting_w_32, fitting_b_32 = linear_fitting(x_testing[:, 2],
-                                                    y_testing[:, 2])
-        ax3[2].plot(x_AlSc2Si2, fitting_w_32 * x_AlSc2Si2 + fitting_b_32, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_32, fitting_w_32))
-        ax3[2].legend()
+        ax3[0][1].set_xlabel('Al_2 / wt.%')
+        ax3[0][1].set_ylabel('EL / %')
+        ax3[0][1].set_title('Al_2 / EL', fontstyle='oblique')
+        ax3[0][1].scatter(x_testing[:, 1], y_testing[:, 2],
+                          label='Testing data')
+        ax3[0][1].scatter(x_training[:, 1], y_training[:, 2],
+                          label='Training data')
+        fitting_w_301, fitting_b_301 = linear_fitting(
+            x_testing[:, 1], y_testing[:, 2])
+        ax3[0][1].plot(x_Al_2, fitting_w_301 * x_Al_2 + fitting_b_301, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_301, fitting_w_301))
+        ax3[0][1].legend()
+        # Si/EL
+        ax3[1][0].set_xlabel('Si / wt.%')
+        ax3[1][0].set_ylabel('EL / %')
+        ax3[1][0].set_title('Si / EL', fontstyle='oblique')
+        ax3[1][0].scatter(x_testing[:, 2], y_testing[:, 2],
+                          label='Testing data')
+        ax3[1][0].scatter(x_training[:, 2], y_training[:, 2],
+                          label='Training data')
+        fitting_w_310, fitting_b_310 = linear_fitting(x_testing[:, 2],
+                                                      y_testing[:, 2])
+        ax3[1][0].plot(x_Si, fitting_w_310 * x_Si + fitting_b_310, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_310, fitting_w_310))
+        ax3[1][0].legend()
+        # AlSi2Sr/EL
+        ax3[1][1].set_xlabel('AlSi2Sr / wt.%')
+        ax3[1][1].set_ylabel('EL / %')
+        ax3[1][1].set_title('AlSi2Sr / EL', fontstyle='oblique')
+        ax3[1][1].scatter(x_testing[:, 3], y_testing[:, 2],
+                          label='Testing data')
+        ax3[1][1].scatter(x_training[:, 3], y_training[:, 2],
+                          label='Training data')
+        fitting_w_311, fitting_b_311 = linear_fitting(x_testing[:, 3],
+                                                      y_testing[:, 2])
+        ax3[1][1].plot(x_AlSi2Sr, fitting_w_311 * x_AlSi2Sr + fitting_b_311, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_311, fitting_w_311))
+        ax3[1][1].legend()
         plt.savefig(path + 'phase_EL.png', bbox_inches='tight')
-        linear_coef = pd.DataFrame(data=np.ones((9, 2)),
-                                   index=['UTS_Al_1', 'UTS_Al_2+Si', 'UTS_AlSc2Si2', 'YS_Al_1',
-                                          'YS_Al_2+Si', 'YS_AlSc2Si2', 'EL_Al_1', 'EL_Al_2+Si', 'EL_AlSc2Si2'], columns=['weight', 'bias'])
+        linear_coef = pd.DataFrame(data=np.ones((12, 2)),
+                                   index=['UTS_Al_1', 'UTS_Al_2', 'UTS_Si', 'UTS_AlSi2Sr',
+                                          'YS_Al_1', 'YS_Al_2', 'YS_Si', 'YS_AlSi2Sr',
+                                          'EL_Al_1', 'EL_Al_2', 'EL_Si', 'EL_AlSi2Sr'],
+                                   columns=['weight', 'bias'])
         # UTS
-        linear_coef.iloc[0, 0] = fitting_w_10
-        linear_coef.iloc[0, 1] = fitting_b_10
-        linear_coef.iloc[1, 0] = fitting_w_11
-        linear_coef.iloc[1, 1] = fitting_b_11
-        linear_coef.iloc[2, 0] = fitting_w_12
-        linear_coef.iloc[2, 1] = fitting_b_12
+        linear_coef.iloc[0, 0] = fitting_w_100
+        linear_coef.iloc[0, 1] = fitting_b_100
+        linear_coef.iloc[1, 0] = fitting_w_101
+        linear_coef.iloc[1, 1] = fitting_b_101
+        linear_coef.iloc[2, 0] = fitting_w_110
+        linear_coef.iloc[2, 1] = fitting_b_110
+        linear_coef.iloc[3, 0] = fitting_w_111
+        linear_coef.iloc[3, 1] = fitting_b_111
         # YS
-        linear_coef.iloc[3, 0] = fitting_w_20
-        linear_coef.iloc[3, 1] = fitting_b_20
-        linear_coef.iloc[4, 0] = fitting_w_21
-        linear_coef.iloc[4, 1] = fitting_b_21
-        linear_coef.iloc[5, 0] = fitting_w_22
-        linear_coef.iloc[5, 1] = fitting_b_22
+        linear_coef.iloc[4, 0] = fitting_w_200
+        linear_coef.iloc[4, 1] = fitting_b_200
+        linear_coef.iloc[5, 0] = fitting_w_201
+        linear_coef.iloc[5, 1] = fitting_b_201
+        linear_coef.iloc[6, 0] = fitting_w_210
+        linear_coef.iloc[6, 1] = fitting_b_210
+        linear_coef.iloc[7, 0] = fitting_w_211
+        linear_coef.iloc[7, 1] = fitting_b_211
         # EL
-        linear_coef.iloc[6, 0] = fitting_w_30
-        linear_coef.iloc[6, 1] = fitting_b_30
-        linear_coef.iloc[7, 0] = fitting_w_31
-        linear_coef.iloc[7, 1] = fitting_b_31
-        linear_coef.iloc[8, 0] = fitting_w_32
-        linear_coef.iloc[8, 1] = fitting_b_32
+        linear_coef.iloc[8, 0] = fitting_w_300
+        linear_coef.iloc[8, 1] = fitting_b_300
+        linear_coef.iloc[9, 0] = fitting_w_301
+        linear_coef.iloc[9, 1] = fitting_b_301
+        linear_coef.iloc[10, 0] = fitting_w_310
+        linear_coef.iloc[10, 1] = fitting_b_310
+        linear_coef.iloc[11, 0] = fitting_w_311
+        linear_coef.iloc[11, 1] = fitting_b_311
         linear_coef.to_csv(path + 'linear_coef.csv', float_format='%.2f')
         # plt.show()
 
@@ -311,160 +347,209 @@ def main(parameters_list):
 
     def draw_relation_performanceRE(x_training_, y_training_, x_testing_, y_testing_):
         sns.set(font="Times New Roman", font_scale=1)
-        x_Al_1 = np.linspace(0, 0.8, 100)
-        x_Al_2_Si = np.linspace(0.1, 0.9, 100)
-        x_AlSc2Si2 = np.linspace(0, 0.02, 100)
+        x_Al_1 = np.linspace(0.305, 0.508, 100)
+        x_Al_2 = np.linspace(0, 0.401, 100)
+        x_Si = np.linspace(0.046, 0.053, 100)
+        x_AlSi2Sr = np.linspace(0, 0.0023, 100)
         # UTS
-        fig1, ax1 = plt.subplots(1, 3, figsize=(18, 4.5))
+        fig1, ax1 = plt.subplots(2, 2, figsize=(16, 12))
         # Al_1/UTS
-        ax1[0].set_xlabel('Al_1 / wt.%')
-        ax1[0].set_ylabel('UTS with regularization')
-        ax1[0].set_title('Al_1 / UTS', fontstyle='oblique')
-        ax1[0].scatter(x_testing_[:, 0], y_testing_[:, 0],
-                       label='Testing data')
-        ax1[0].scatter(x_training_[:, 0], y_training_[:, 0],
-                       label='Training data')
-        fitting_w_10, fitting_b_10 = linear_fitting(x_testing_[:, 0],
-                                                    y_testing_[:, 0])
-        ax1[0].plot(x_Al_1, fitting_w_10 * x_Al_1 + fitting_b_10, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_10, fitting_w_10))
-        ax1[0].legend()
+        ax1[0][0].set_xlabel('Al_1 / wt.%')
+        ax1[0][0].set_ylabel('UTS with regularization')
+        ax1[0][0].set_title('Al_1 / UTS', fontstyle='oblique')
+        ax1[0][0].scatter(x_testing_[:, 0], y_testing_[:, 0],
+                          label='Testing data')
+        ax1[0][0].scatter(x_training_[:, 0], y_training_[:, 0],
+                          label='Training data')
+        fitting_w_100, fitting_b_100 = linear_fitting(x_testing_[:, 0],
+                                                      y_testing_[:, 0])
+        ax1[0][0].plot(x_Al_1, fitting_w_100 * x_Al_1 + fitting_b_100, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_100, fitting_w_100))
+        ax1[0][0].legend()
         # Al_2/UTS
-        ax1[1].set_xlabel('Al_2 + Si / wt.%')
-        ax1[1].set_ylabel('UTS with regularization')
-        ax1[1].set_title('Al_2 + Si / UTS', fontstyle='oblique')
-        ax1[1].scatter(x_testing_[:, 1], y_testing_[:, 0],
-                       label='Testing data')
-        ax1[1].scatter(x_training_[:, 1], y_training_[:, 0],
-                       label='Training data')
-        fitting_w_11, fitting_b_11 = linear_fitting(x_testing_[:, 1],
-                                                    y_testing_[:, 0])
-        ax1[1].plot(x_Al_2_Si, fitting_w_11 * x_Al_2_Si + fitting_b_11, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_11, fitting_w_11))
-        ax1[1].legend()
-        # AlSc2Si2/UTS
-        ax1[2].set_xlabel('AlSc2Si2 / wt.%')
-        ax1[2].set_ylabel('UTS with regularization')
-        ax1[2].set_title('AlSc2Si2 / UTS', fontstyle='oblique')
-        ax1[2].scatter(x_testing_[:, 2], y_testing_[:, 0],
-                       label='Testing data')
-        ax1[2].scatter(x_training_[:, 2], y_training_[:, 0],
-                       label='Training data')
-        fitting_w_12, fitting_b_12 = linear_fitting(x_testing_[:, 2],
-                                                    y_testing_[:, 0])
-        ax1[2].plot(x_AlSc2Si2, fitting_w_12 * x_AlSc2Si2 + fitting_b_12, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_12, fitting_w_12))
-        ax1[2].legend()
+        ax1[0][1].set_xlabel('Al_2 / wt.%')
+        ax1[0][1].set_ylabel('UTS with regularization')
+        ax1[0][1].set_title('Al_2 / UTS', fontstyle='oblique')
+        ax1[0][1].scatter(x_testing_[:, 1], y_testing_[:, 0],
+                          label='Testing data')
+        ax1[0][1].scatter(x_training_[:, 1], y_training_[:, 0],
+                          label='Training data')
+        fitting_w_101, fitting_b_101 = linear_fitting(x_testing_[:, 1],
+                                                      y_testing_[:, 0])
+        ax1[0][1].plot(x_Al_2, fitting_w_101 * x_Al_2 + fitting_b_101, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_101, fitting_w_101))
+        ax1[0][1].legend()
+        # Si/UTS
+        ax1[1][0].set_xlabel('Si / wt.%')
+        ax1[1][0].set_ylabel('UTS with regularization')
+        ax1[1][0].set_title('Si / UTS', fontstyle='oblique')
+        ax1[1][0].scatter(x_testing_[:, 2], y_testing_[:, 0],
+                          label='Testing data')
+        ax1[1][0].scatter(x_training_[:, 2], y_training_[:, 0],
+                          label='Training data')
+        fitting_w_110, fitting_b_110 = linear_fitting(x_testing_[:, 2],
+                                                      y_testing_[:, 0])
+        ax1[1][0].plot(x_Si, fitting_w_110 * x_Si + fitting_b_110, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_110, fitting_w_110))
+        ax1[1][0].legend()
+        # AlSi2Sr/UTS
+        ax1[1][1].set_xlabel('AlSi2Sr / wt.%')
+        ax1[1][1].set_ylabel('UTS with regularization')
+        ax1[1][1].set_title('AlSi2Sr / UTS', fontstyle='oblique')
+        ax1[1][1].scatter(x_testing_[:, 3], y_testing_[:, 0],
+                          label='Testing data')
+        ax1[1][1].scatter(x_training_[:, 3], y_training_[:, 0],
+                          label='Training data')
+        fitting_w_111, fitting_b_111 = linear_fitting(x_testing_[:, 3],
+                                                      y_testing_[:, 0])
+        ax1[1][1].plot(x_AlSi2Sr, fitting_w_111 * x_AlSi2Sr + fitting_b_111, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_111, fitting_w_111))
+        ax1[1][1].legend()
         plt.savefig(path + 'phase_UTS_performanceRE.png', bbox_inches='tight')
         # YS
-        fig2, ax2 = plt.subplots(1, 3, figsize=(18, 4.5))
+        fig2, ax2 = plt.subplots(2, 2, figsize=(16, 12))
         # Al_1/YS
-        ax2[0].set_xlabel('Al_1 / wt.%')
-        ax2[0].set_ylabel('YS with regularization')
-        ax2[0].set_title('Al_1 / YS', fontstyle='oblique')
-        ax2[0].scatter(x_testing_[:, 0], y_testing_[:, 1],
-                       label='Testing data')
-        ax2[0].scatter(x_training_[:, 0], y_training_[:, 1],
-                       label='Training data')
-        fitting_w_20, fitting_b_20 = linear_fitting(x_testing_[:, 0],
-                                                    y_testing_[:, 1])
-        ax2[0].plot(x_Al_1, fitting_w_20 * x_Al_1 + fitting_b_20, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_20, fitting_w_20))
-        ax2[0].legend(loc='upper left')
+        ax2[0][0].set_xlabel('Al_1 / wt.%')
+        ax2[0][0].set_ylabel('YS with regularization')
+        ax2[0][0].set_title('Al_1 / YS', fontstyle='oblique')
+        ax2[0][0].scatter(x_testing_[:, 0], y_testing_[:, 1],
+                          label='Testing data')
+        ax2[0][0].scatter(x_training_[:, 0], y_training_[:, 1],
+                          label='Training data')
+        fitting_w_200, fitting_b_200 = linear_fitting(x_testing_[:, 0],
+                                                      y_testing_[:, 1])
+        ax2[0][0].plot(x_Al_1, fitting_w_200 * x_Al_1 + fitting_b_200, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_200, fitting_w_200))
+        ax2[0][0].legend(loc='upper left')
         # Al_2/YS
-        ax2[1].set_xlabel('Al_2 + Si / wt.%')
-        ax2[1].set_ylabel('YS with regularization')
-        ax2[1].set_title('Al_2 / YS', fontstyle='oblique')
-        ax2[1].scatter(x_testing_[:, 1], y_testing_[:, 1],
-                       label='Testing data')
-        ax2[1].scatter(x_training_[:, 1], y_training_[:, 1],
-                       label='Training data')
-        fitting_w_21, fitting_b_21 = linear_fitting(x_testing_[:, 1],
-                                                    y_testing_[:, 1])
-        ax2[1].plot(x_Al_2_Si, fitting_w_21 * x_Al_2_Si + fitting_b_21, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_21, fitting_w_21))
-        ax2[1].legend(loc='upper left')
-        # AlSc2Si2/YS
-        ax2[2].set_xlabel('AlSc2Si2 / wt.%')
-        ax2[2].set_ylabel('YS with regularization')
-        ax2[2].set_title('AlSc2Si2 / YS', fontstyle='oblique')
-        ax2[2].scatter(x_testing_[:, 2], y_testing_[:, 1],
-                       label='Testing data')
-        ax2[2].scatter(x_training_[:, 2], y_training_[:, 1],
-                       label='Training data')
-        fitting_w_22, fitting_b_22 = linear_fitting(x_testing_[:, 2],
-                                                    y_testing_[:, 1])
-        ax2[2].plot(x_AlSc2Si2, fitting_w_22 * x_AlSc2Si2 + fitting_b_22, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_22, fitting_w_22))
-        ax2[2].legend(loc='upper left')
+        ax2[0][1].set_xlabel('Al_2 / wt.%')
+        ax2[0][1].set_ylabel('YS with regularization')
+        ax2[0][1].set_title('Al_2 / YS', fontstyle='oblique')
+        ax2[0][1].scatter(x_testing_[:, 1], y_testing_[:, 1],
+                          label='Testing data')
+        ax2[0][1].scatter(x_training_[:, 1], y_training_[:, 1],
+                          label='Training data')
+        fitting_w_201, fitting_b_201 = linear_fitting(x_testing_[:, 1],
+                                                      y_testing_[:, 1])
+        ax2[0][1].plot(x_Al_2, fitting_w_201 * x_Al_2 + fitting_b_201, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_201, fitting_w_201))
+        ax2[0][1].legend(loc='upper left')
+        # Si/YS
+        ax2[1][0].set_xlabel('Si / wt.%')
+        ax2[1][0].set_ylabel('YS with regularization')
+        ax2[1][0].set_title('Si / YS', fontstyle='oblique')
+        ax2[1][0].scatter(x_testing_[:, 2], y_testing_[:, 1],
+                          label='Testing data')
+        ax2[1][0].scatter(x_training_[:, 2], y_training_[:, 1],
+                          label='Training data')
+        fitting_w_210, fitting_b_210 = linear_fitting(x_testing_[:, 2],
+                                                      y_testing_[:, 1])
+        ax2[1][0].plot(x_Si, fitting_w_210 * x_Si + fitting_b_210, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_210, fitting_w_210))
+        ax2[1][0].legend(loc='upper left')
+        # AlSi2Sr/YS
+        ax2[1][1].set_xlabel('AlSi2Sr / wt.%')
+        ax2[1][1].set_ylabel('YS with regularization')
+        ax2[1][1].set_title('AlSi2Sr / YS', fontstyle='oblique')
+        ax2[1][1].scatter(x_testing_[:, 3], y_testing_[:, 1],
+                          label='Testing data')
+        ax2[1][1].scatter(x_training_[:, 3], y_training_[:, 1],
+                          label='Training data')
+        fitting_w_211, fitting_b_211 = linear_fitting(x_testing_[:, 3],
+                                                      y_testing_[:, 1])
+        ax2[1][1].plot(x_AlSi2Sr, fitting_w_211 * x_AlSi2Sr + fitting_b_211, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_211, fitting_w_211))
+        ax2[1][1].legend(loc='upper left')
         plt.savefig(path + 'phase_YS_performanceRE.png', bbox_inches='tight')
         # EL
-        fig3, ax3 = plt.subplots(1, 3, figsize=(18, 4.5))
+        fig3, ax3 = plt.subplots(2, 2, figsize=(16, 12))
         # Al_1/EL
-        ax3[0].set_xlabel('Al_1 / wt.%')
-        ax3[0].set_ylabel('EL with regularization')
-        ax3[0].set_title('Al_1 / EL', fontstyle='oblique')
-        ax3[0].scatter(x_testing_[:, 0], y_testing_[:, 2],
-                       label='Testing data')
-        ax3[0].scatter(x_training_[:, 0], y_training_[:, 2],
-                       label='Training data')
-        fitting_w_30, fitting_b_30 = linear_fitting(x_testing_[:, 0],
-                                                    y_testing_[:, 2])
-        ax3[0].plot(x_Al_1, fitting_w_30 * x_Al_1 + fitting_b_30, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_30, fitting_w_30))
-        ax3[0].legend()
+        ax3[0][0].set_xlabel('Al_1 / wt.%')
+        ax3[0][0].set_ylabel('EL with regularization')
+        ax3[0][0].set_title('Al_1 / EL', fontstyle='oblique')
+        ax3[0][0].scatter(x_testing_[:, 0], y_testing_[:, 2],
+                          label='Testing data')
+        ax3[0][0].scatter(x_training_[:, 0], y_training_[:, 2],
+                          label='Training data')
+        fitting_w_300, fitting_b_300 = linear_fitting(x_testing_[:, 0],
+                                                      y_testing_[:, 2])
+        ax3[0][0].plot(x_Al_1, fitting_w_300 * x_Al_1 + fitting_b_300, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_300, fitting_w_300))
+        ax3[0][0].legend()
         # Al_2/EL
-        ax3[1].set_xlabel('Al_2 + Si / wt.%')
-        ax3[1].set_ylabel('EL with regularization')
-        ax3[1].set_title('Al_2 / EL', fontstyle='oblique')
-        ax3[1].scatter(x_testing_[:, 1], y_testing_[:, 2],
-                       label='Testing data')
-        ax3[1].scatter(x_training_[:, 1], y_training_[:, 2],
-                       label='Training data')
-        fitting_w_31, fitting_b_31 = linear_fitting(x_testing_[:, 1],
-                                                    y_testing_[:, 2])
-        ax3[1].plot(x_Al_2_Si, fitting_w_31 * x_Al_2_Si + fitting_b_31, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_31, fitting_w_31))
-        ax3[1].legend()
-        # AlSc2Si2/EL
-        ax3[2].set_xlabel('AlSc2Si2 / wt.%')
-        ax3[2].set_ylabel('EL with regularization')
-        ax3[2].set_title('AlSc2Si2 / EL', fontstyle='oblique')
-        ax3[2].scatter(x_testing_[:, 2], y_testing_[:, 2],
-                       label='Testing data')
-        ax3[2].scatter(x_training_[:, 2], y_training_[:, 2],
-                       label='Training data')
-        fitting_w_32, fitting_b_32 = linear_fitting(x_testing_[:, 2],
-                                                    y_testing_[:, 2])
-        ax3[2].plot(x_AlSc2Si2, fitting_w_32 * x_AlSc2Si2 + fitting_b_32, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_32, fitting_w_32))
-        ax3[2].legend()
+        ax3[0][1].set_xlabel('Al_2 / wt.%')
+        ax3[0][1].set_ylabel('EL with regularization')
+        ax3[0][1].set_title('Al_2 / EL', fontstyle='oblique')
+        ax3[0][1].scatter(x_testing_[:, 1], y_testing_[:, 2],
+                          label='Testing data')
+        ax3[0][1].scatter(x_training_[:, 1], y_training_[:, 2],
+                          label='Training data')
+        fitting_w_301, fitting_b_301 = linear_fitting(x_testing_[:, 1],
+                                                      y_testing_[:, 2])
+        ax3[0][1].plot(x_Al_2, fitting_w_301 * x_Al_2 + fitting_b_301, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_301, fitting_w_301))
+        ax3[0][1].legend()
+        # Si/EL
+        ax3[1][0].set_xlabel('Si / wt.%')
+        ax3[1][0].set_ylabel('EL with regularization')
+        ax3[1][0].set_title('Si / EL', fontstyle='oblique')
+        ax3[1][0].scatter(x_testing_[:, 2], y_testing_[:, 2],
+                          label='Testing data')
+        ax3[1][0].scatter(x_training_[:, 2], y_training_[:, 2],
+                          label='Training data')
+        fitting_w_310, fitting_b_310 = linear_fitting(x_testing_[:, 2],
+                                                      y_testing_[:, 2])
+        ax3[1][0].plot(x_Si, fitting_w_310 * x_Si + fitting_b_310, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_310, fitting_w_310))
+        ax3[1][0].legend()
+        # AlSi2Sr/EL
+        ax3[1][1].set_xlabel('AlSi2Sr / wt.%')
+        ax3[1][1].set_ylabel('EL with regularization')
+        ax3[1][1].set_title('AlSi2Sr / EL', fontstyle='oblique')
+        ax3[1][1].scatter(x_testing_[:, 3], y_testing_[:, 2],
+                          label='Testing data')
+        ax3[1][1].scatter(x_training_[:, 3], y_training_[:, 2],
+                          label='Training data')
+        fitting_w_311, fitting_b_311 = linear_fitting(x_testing_[:, 3],
+                                                      y_testing_[:, 2])
+        ax3[1][1].plot(x_AlSi2Sr, fitting_w_311 * x_AlSi2Sr + fitting_b_311, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_311, fitting_w_311))
+        ax3[1][1].legend()
         plt.savefig(path + 'phase_EL_performanceRE.png', bbox_inches='tight')
-        linear_coef_allRE = pd.DataFrame(data=np.ones((9, 2)),
-                                         index=['UTS_Al_1', 'UTS_Al_2+Si', 'UTS_AlSc2Si2', 'YS_Al_1', 'YS_Al_2+Si', 'YS_AlSc2Si2', 'EL_Al_1', 'EL_Al_2+Si', 'EL_AlSc2Si2'], columns=['weight', 'bias'])
+        linear_coef_allRE = pd.DataFrame(data=np.ones((12, 2)),
+                                         index=['UTS_Al_1', 'UTS_Al_2', 'UTS_Si', 'UTS_AlSi2Sr',
+                                                'YS_Al_1', 'YS_Al_2', 'YS_Si', 'YS_AlSi2Sr',
+                                                'EL_Al_1', 'EL_Al_2', 'EL_Si', 'EL_AlSi2Sr'],
+                                         columns=['weight', 'bias'])
         # UTS
-        linear_coef_allRE.iloc[0, 0] = fitting_w_10
-        linear_coef_allRE.iloc[0, 1] = fitting_b_10
-        linear_coef_allRE.iloc[1, 0] = fitting_w_11
-        linear_coef_allRE.iloc[1, 1] = fitting_b_11
-        linear_coef_allRE.iloc[2, 0] = fitting_w_12
-        linear_coef_allRE.iloc[2, 1] = fitting_b_12
+        linear_coef_allRE.iloc[0, 0] = fitting_w_100
+        linear_coef_allRE.iloc[0, 1] = fitting_b_100
+        linear_coef_allRE.iloc[1, 0] = fitting_w_101
+        linear_coef_allRE.iloc[1, 1] = fitting_b_101
+        linear_coef_allRE.iloc[2, 0] = fitting_w_110
+        linear_coef_allRE.iloc[2, 1] = fitting_b_110
+        linear_coef_allRE.iloc[3, 0] = fitting_w_111
+        linear_coef_allRE.iloc[3, 1] = fitting_b_111
         # YS
-        linear_coef_allRE.iloc[3, 0] = fitting_w_20
-        linear_coef_allRE.iloc[3, 1] = fitting_b_20
-        linear_coef_allRE.iloc[4, 0] = fitting_w_21
-        linear_coef_allRE.iloc[4, 1] = fitting_b_21
-        linear_coef_allRE.iloc[5, 0] = fitting_w_22
-        linear_coef_allRE.iloc[5, 1] = fitting_b_22
+        linear_coef_allRE.iloc[4, 0] = fitting_w_200
+        linear_coef_allRE.iloc[4, 1] = fitting_b_200
+        linear_coef_allRE.iloc[5, 0] = fitting_w_201
+        linear_coef_allRE.iloc[5, 1] = fitting_b_201
+        linear_coef_allRE.iloc[6, 0] = fitting_w_210
+        linear_coef_allRE.iloc[6, 1] = fitting_b_210
+        linear_coef_allRE.iloc[7, 0] = fitting_w_211
+        linear_coef_allRE.iloc[7, 1] = fitting_b_211
         # EL
-        linear_coef_allRE.iloc[6, 0] = fitting_w_30
-        linear_coef_allRE.iloc[6, 1] = fitting_b_30
-        linear_coef_allRE.iloc[7, 0] = fitting_w_31
-        linear_coef_allRE.iloc[7, 1] = fitting_b_31
-        linear_coef_allRE.iloc[8, 0] = fitting_w_32
-        linear_coef_allRE.iloc[8, 1] = fitting_b_32
-        linear_coef_allRE.to_csv(path + 'linear_coef_performanceRE.csv',
-                                 float_format='%.2f')
+        linear_coef_allRE.iloc[8, 0] = fitting_w_300
+        linear_coef_allRE.iloc[8, 1] = fitting_b_300
+        linear_coef_allRE.iloc[9, 0] = fitting_w_301
+        linear_coef_allRE.iloc[9, 1] = fitting_b_301
+        linear_coef_allRE.iloc[10, 0] = fitting_w_310
+        linear_coef_allRE.iloc[10, 1] = fitting_b_310
+        linear_coef_allRE.iloc[11, 0] = fitting_w_311
+        linear_coef_allRE.iloc[11, 1] = fitting_b_311
+        linear_coef_allRE.to_csv(
+            path + 'linear_coef_performanceRE.csv', float_format='%.2f')
         # plt.show()
 
     # 绘制相分数(归一化)-性能(归一化)关系图
@@ -472,168 +557,230 @@ def main(parameters_list):
     def draw_relation_allRE(x_training_, y_training_, x_testing_, y_testing_):
         sns.set(font="Times New Roman", font_scale=1)
         x_Al_1 = np.linspace(-2.3, 2.3, 100)
-        x_Al_2_Si = np.linspace(-2.3, 2.3, 100)
-        x_AlSc2Si2 = np.linspace(-2.3, 2.3, 100)
+        x_Al_2 = np.linspace(-2.3, 2.3, 100)
+        x_Si = np.linspace(-2.3, 2.3, 100)
+        x_AlSi2Sr = np.linspace(-2.3, 2.3, 100)
         # UTS
-        fig1, ax1 = plt.subplots(1, 3, figsize=(18, 4.5))
+        fig1, ax1 = plt.subplots(2, 2, figsize=(16, 12))
         # Al_1/UTS
-        ax1[0].set_xlabel('Al_1 with regularization')
-        ax1[0].set_ylabel('UTS with regularization')
-        ax1[0].set_title('Al_1 / UTS', fontstyle='oblique')
-        ax1[0].scatter(x_testing_[:, 0], y_testing_[
-            :, 0], label='Testing data')
-        ax1[0].scatter(x_training_[:, 0], y_training_[:, 0],
-                       label='Training data')
-        fitting_w_10, fitting_b_10 = linear_fitting(x_testing_[:, 0],
-                                                    y_testing_[:, 0])
-        ax1[0].plot(x_Al_1, fitting_w_10 * x_Al_1 + fitting_b_10, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_10, fitting_w_10))
-        ax1[0].legend()
-        # Al_2+Si/UTS
-        ax1[1].set_xlabel('Al_2 + Si with regularization')
-        ax1[1].set_ylabel('UTS with regularization')
-        ax1[1].set_title('Al_2 + Si / UTS', fontstyle='oblique')
-        ax1[1].scatter(x_testing_[:, 1], y_testing_[:, 0],
-                       label='Testing data')
-        ax1[1].scatter(x_training_[:, 1], y_training_[:, 0],
-                       label='Training data')
-        fitting_w_11, fitting_b_11 = linear_fitting(x_testing_[:, 1],
-                                                    y_testing_[:, 0])
-        ax1[1].plot(x_Al_2_Si, fitting_w_11 * x_Al_2_Si + fitting_b_11, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_11, fitting_w_11))
-        ax1[1].legend()
-        # AlSc2Si2/UTS
-        ax1[2].set_xlabel('AlSc2Si2 with regularization')
-        ax1[2].set_ylabel('UTS with regularization')
-        ax1[2].set_title('AlSc2Si2 / UTS', fontstyle='oblique')
-        ax1[2].scatter(x_testing_[:, 2], y_testing_[:, 0],
-                       label='Testing data')
-        ax1[2].scatter(x_training_[:, 2], y_training_[:, 0],
-                       label='Training data')
-        fitting_w_12, fitting_b_12 = linear_fitting(x_testing_[:, 2],
-                                                    y_testing_[:, 0])
-        ax1[2].plot(x_AlSc2Si2, fitting_w_12 * x_AlSc2Si2 + fitting_b_12, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_12, fitting_w_12))
-        ax1[2].legend()
+        ax1[0][0].set_xlabel('Al_1 with regularization')
+        ax1[0][0].set_ylabel('UTS with regularization')
+        ax1[0][0].set_title('Al_1 / UTS', fontstyle='oblique')
+        ax1[0][0].scatter(x_testing_[:, 0], y_testing_[:, 0],
+                          label='Testing data')
+        ax1[0][0].scatter(x_training_[:, 0], y_training_[:, 0],
+                          label='Training data')
+        fitting_w_100, fitting_b_100 = linear_fitting(x_testing_[:, 0],
+                                                      y_testing_[:, 0])
+        ax1[0][0].plot(x_Al_1, fitting_w_100 * x_Al_1 + fitting_b_100, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_100, fitting_w_100))
+        ax1[0][0].legend()
+        # Al_2/UTS
+        ax1[0][1].set_xlabel('Al_2 with regularization')
+        ax1[0][1].set_ylabel('UTS with regularization')
+        ax1[0][1].set_title('Al_2 / UTS', fontstyle='oblique')
+        ax1[0][1].scatter(x_testing_[:, 1], y_testing_[:, 0],
+                          label='Testing data')
+        ax1[0][1].scatter(x_training_[:, 1], y_training_[:, 0],
+                          label='Training data')
+        fitting_w_101, fitting_b_101 = linear_fitting(x_testing_[:, 1],
+                                                      y_testing_[:, 0])
+        ax1[0][1].plot(x_Al_2, fitting_w_101 * x_Al_2 + fitting_b_101, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_101, fitting_w_101))
+        ax1[0][1].legend()
+        # Si/UTS
+        ax1[1][0].set_xlabel('Si with regularization')
+        ax1[1][0].set_ylabel('UTS with regularization')
+        ax1[1][0].set_title('Si / UTS', fontstyle='oblique')
+        ax1[1][0].scatter(x_testing_[:, 2], y_testing_[:, 0],
+                          label='Testing data')
+        ax1[1][0].scatter(x_training_[:, 2], y_training_[:, 0],
+                          label='Training data')
+        fitting_w_110, fitting_b_110 = linear_fitting(x_testing_[:, 2],
+                                                      y_testing_[:, 0])
+        ax1[1][0].plot(x_Si, fitting_w_110 * x_Si + fitting_b_110, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_110, fitting_w_110))
+        ax1[1][0].legend()
+        # AlSi2Sr/UTS
+        ax1[1][1].set_xlabel('AlSi2Sr with regularization')
+        ax1[1][1].set_ylabel('UTS with regularization')
+        ax1[1][1].set_title('AlSi2Sr / UTS', fontstyle='oblique')
+        ax1[1][1].scatter(x_testing_[:, 2], y_testing_[:, 0],
+                          label='Testing data')
+        ax1[1][1].scatter(x_training_[:, 2], y_training_[:, 0],
+                          label='Training data')
+        fitting_w_111, fitting_b_111 = linear_fitting(x_testing_[:, 2],
+                                                      y_testing_[:, 0])
+        ax1[1][1].plot(x_AlSi2Sr, fitting_w_111 * x_AlSi2Sr + fitting_b_111, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_111, fitting_w_111))
+        ax1[1][1].legend()
+        # AlSi2Sr/UTS
+        ax1[1][1].set_xlabel('AlSi2Sr with regularization')
+        ax1[1][1].set_ylabel('UTS with regularization')
+        ax1[1][1].set_title('AlSi2Sr / UTS', fontstyle='oblique')
+        ax1[1][1].scatter(x_testing_[:, 3], y_testing_[:, 0],
+                          label='Testing data')
+        ax1[1][1].scatter(x_training_[:, 3], y_training_[:, 0],
+                          label='Training data')
+        fitting_w_111, fitting_b_111 = linear_fitting(x_testing_[:, 3],
+                                                      y_testing_[:, 0])
+        ax1[1][1].plot(x_AlSi2Sr, fitting_w_111 * x_AlSi2Sr + fitting_b_111, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_111, fitting_w_111))
+        ax1[1][1].legend()
         plt.savefig(path + 'phase_UTS_allRE.png', bbox_inches='tight')
         # YS
-        fig2, ax2 = plt.subplots(1, 3, figsize=(18, 4.5))
+        fig2, ax2 = plt.subplots(2, 2, figsize=(16, 12))
         # Al_1/YS
-        ax2[0].set_xlabel('Al_1 with regularization')
-        ax2[0].set_ylabel('YS with regularization')
-        ax2[0].set_title('Al_1 / YS', fontstyle='oblique')
-        ax2[0].scatter(x_testing_[:, 0], y_testing_[:, 1],
-                       label='Testing data')
-        ax2[0].scatter(x_training_[:, 0], y_training_[:, 1],
-                       label='Training data')
-        fitting_w_20, fitting_b_20 = linear_fitting(x_testing_[:, 0],
-                                                    y_testing_[:, 1])
-        ax2[0].plot(x_Al_1, fitting_w_20 * x_Al_1 + fitting_b_20, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_20, fitting_w_20))
-        ax2[0].legend(loc='upper left')
-        # Al_2+Si/YS
-        ax2[1].set_xlabel('Al_2 + Si with regularization')
-        ax2[1].set_ylabel('YS with regularization')
-        ax2[1].set_title('Al_2 + Si / YS', fontstyle='oblique')
-        ax2[1].scatter(x_testing_[:, 1], y_testing_[:, 1],
-                       label='Testing data')
-        ax2[1].scatter(x_training_[:, 1], y_training_[:, 1],
-                       label='Training data')
-        fitting_w_21, fitting_b_21 = linear_fitting(x_testing_[:, 1],
-                                                    y_testing_[:, 1])
-        ax2[1].plot(x_Al_2_Si, fitting_w_21 * x_Al_2_Si + fitting_b_21, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_21, fitting_w_21))
-        ax2[1].legend(loc='upper left')
-        # AlSc2Si2/YS
-        ax2[2].set_xlabel('AlSc2Si2 with regularization')
-        ax2[2].set_ylabel('YS with regularization')
-        ax2[2].set_title('AlSc2Si2 / YS', fontstyle='oblique')
-        ax2[2].scatter(x_testing_[:, 2], y_testing_[:, 1],
-                       label='Testing data')
-        ax2[2].scatter(x_training_[:, 2], y_training_[:, 1],
-                       label='Training data')
-        fitting_w_22, fitting_b_22 = linear_fitting(x_testing_[:, 2],
-                                                    y_testing_[:, 1])
-        ax2[2].plot(x_AlSc2Si2, fitting_w_22 * x_AlSc2Si2 + fitting_b_22, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_22, fitting_w_22))
-        ax2[2].legend(loc='upper left')
+        ax2[0][0].set_xlabel('Al_1 with regularization')
+        ax2[0][0].set_ylabel('YS with regularization')
+        ax2[0][0].set_title('Al_1 / YS', fontstyle='oblique')
+        ax2[0][0].scatter(x_testing_[:, 0], y_testing_[:, 1],
+                          label='Testing data')
+        ax2[0][0].scatter(x_training_[:, 0], y_training_[:, 1],
+                          label='Training data')
+        fitting_w_200, fitting_b_200 = linear_fitting(x_testing_[:, 0],
+                                                      y_testing_[:, 1])
+        ax2[0][0].plot(x_Al_1, fitting_w_200 * x_Al_1 + fitting_b_200, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_200, fitting_w_200))
+        ax2[0][0].legend(loc='upper left')
+        # Al_2/YS
+        ax2[0][1].set_xlabel('Al_2 with regularization')
+        ax2[0][1].set_ylabel('YS with regularization')
+        ax2[0][1].set_title('Al_2 / YS', fontstyle='oblique')
+        ax2[0][1].scatter(x_testing_[:, 1], y_testing_[:, 1],
+                          label='Testing data')
+        ax2[0][1].scatter(x_training_[:, 1], y_training_[:, 1],
+                          label='Training data')
+        fitting_w_201, fitting_b_201 = linear_fitting(x_testing_[:, 1],
+                                                      y_testing_[:, 1])
+        ax2[0][1].plot(x_Al_2, fitting_w_201 * x_Al_2 + fitting_b_201, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_201, fitting_w_201))
+        ax2[0][1].legend(loc='upper left')
+        # Si/YS
+        ax2[1][0].set_xlabel('Si with regularization')
+        ax2[1][0].set_ylabel('YS with regularization')
+        ax2[1][0].set_title('Si / YS', fontstyle='oblique')
+        ax2[1][0].scatter(x_testing_[:, 2], y_testing_[:, 1],
+                          label='Testing data')
+        ax2[1][0].scatter(x_training_[:, 2], y_training_[:, 1],
+                          label='Training data')
+        fitting_w_210, fitting_b_210 = linear_fitting(x_testing_[:, 2],
+                                                      y_testing_[:, 1])
+        ax2[1][0].plot(x_Si, fitting_w_210 * x_Si + fitting_b_210, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_210, fitting_w_210))
+        ax2[1][0].legend(loc='upper left')
+        # AlSi2Sr/YS
+        ax2[1][1].set_xlabel('AlSi2Sr with regularization')
+        ax2[1][1].set_ylabel('YS with regularization')
+        ax2[1][1].set_title('AlSi2Sr / YS', fontstyle='oblique')
+        ax2[1][1].scatter(x_testing_[:, 3], y_testing_[:, 1],
+                          label='Testing data')
+        ax2[1][1].scatter(x_training_[:, 3], y_training_[:, 1],
+                          label='Training data')
+        fitting_w_211, fitting_b_211 = linear_fitting(x_testing_[:, 3],
+                                                      y_testing_[:, 1])
+        ax2[1][1].plot(x_AlSi2Sr, fitting_w_211 * x_AlSi2Sr + fitting_b_211, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_211, fitting_w_211))
+        ax2[1][1].legend(loc='upper left')
         plt.savefig(path + 'phase_YS_allRE.png', bbox_inches='tight')
         # EL
-        fig3, ax3 = plt.subplots(1, 3, figsize=(18, 4.5))
+        fig3, ax3 = plt.subplots(2, 2, figsize=(16, 12))
         # Al_1/EL
-        ax3[0].set_xlabel('Al_1 with regularization')
-        ax3[0].set_ylabel('EL with regularization')
-        ax3[0].set_title('Al_1 / EL', fontstyle='oblique')
-        ax3[0].scatter(x_testing_[:, 0], y_testing_[:, 2],
-                       label='Testing data')
-        ax3[0].scatter(x_training_[:, 0], y_training_[:, 2],
-                       label='Training data')
-        fitting_w_30, fitting_b_30 = linear_fitting(x_testing_[:, 0],
-                                                    y_testing_[:, 2])
-        ax3[0].plot(x_Al_1, fitting_w_30 * x_Al_1 + fitting_b_30, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_30, fitting_w_30))
-        ax3[0].legend()
+        ax3[0][0].set_xlabel('Al_1 with regularization')
+        ax3[0][0].set_ylabel('EL with regularization')
+        ax3[0][0].set_title('Al_1 / EL', fontstyle='oblique')
+        ax3[0][0].scatter(x_testing_[:, 0], y_testing_[:, 2],
+                          label='Testing data')
+        ax3[0][0].scatter(x_training_[:, 0], y_training_[:, 2],
+                          label='Training data')
+        fitting_w_300, fitting_b_300 = linear_fitting(x_testing_[:, 0],
+                                                      y_testing_[:, 2])
+        ax3[0][0].plot(x_Al_1, fitting_w_300 * x_Al_1 + fitting_b_300, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_300, fitting_w_300))
+        ax3[0][0].legend()
         # Al_2/EL
-        ax3[1].set_xlabel('Al_2 + Si with regularization')
-        ax3[1].set_ylabel('EL with regularization')
-        ax3[1].set_title('Al_2 + Si / EL', fontstyle='oblique')
-        ax3[1].scatter(x_testing_[:, 1], y_testing_[:, 2],
-                       label='Testing data')
-        ax3[1].scatter(x_training_[:, 1], y_training_[:, 2],
-                       label='Training data')
-        fitting_w_31, fitting_b_31 = linear_fitting(x_testing_[:, 1],
-                                                    y_testing_[:, 2])
-        ax3[1].plot(x_Al_2_Si, fitting_w_31 * x_Al_2_Si + fitting_b_31, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_31, fitting_w_31))
-        ax3[1].legend()
-        # AlSc2Si2/EL
-        ax3[2].set_xlabel('AlSc2Si2 with regularization')
-        ax3[2].set_ylabel('EL with regularization')
-        ax3[2].set_title('AlSc2Si2 / EL', fontstyle='oblique')
-        ax3[2].scatter(x_testing_[:, 2], y_testing_[:, 2],
-                       label='Testing data')
-        ax3[2].scatter(x_training_[:, 2], y_training_[:, 2],
-                       label='Training data')
-        fitting_w_32, fitting_b_32 = linear_fitting(x_testing_[:, 2],
-                                                    y_testing_[:, 2])
-        ax3[2].plot(x_AlSc2Si2, fitting_w_32 * x_AlSc2Si2 + fitting_b_32, color='red',
-                    linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_32, fitting_w_32))
-        ax3[2].legend()
+        ax3[0][1].set_xlabel('Al_2 with regularization')
+        ax3[0][1].set_ylabel('EL with regularization')
+        ax3[0][1].set_title('Al_2 / EL', fontstyle='oblique')
+        ax3[0][1].scatter(x_testing_[:, 1], y_testing_[:, 2],
+                          label='Testing data')
+        ax3[0][1].scatter(x_training_[:, 1], y_training_[:, 2],
+                          label='Training data')
+        fitting_w_301, fitting_b_301 = linear_fitting(x_testing_[:, 1],
+                                                      y_testing_[:, 2])
+        ax3[0][1].plot(x_Al_2, fitting_w_301 * x_Al_2 + fitting_b_301, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_301, fitting_w_301))
+        ax3[0][1].legend()
+        # Si/EL
+        ax3[1][0].set_xlabel('Si with regularization')
+        ax3[1][0].set_ylabel('EL with regularization')
+        ax3[1][0].set_title('Si / EL', fontstyle='oblique')
+        ax3[1][0].scatter(x_testing_[:, 2], y_testing_[:, 2],
+                          label='Testing data')
+        ax3[1][0].scatter(x_training_[:, 2], y_training_[:, 2],
+                          label='Training data')
+        fitting_w_310, fitting_b_310 = linear_fitting(x_testing_[:, 2],
+                                                      y_testing_[:, 2])
+        ax3[1][0].plot(x_Si, fitting_w_310 * x_Si + fitting_b_310, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_310, fitting_w_310))
+        ax3[1][0].legend()
+        # AlSi2Sr/EL
+        ax3[1][1].set_xlabel('AlSi2Sr with regularization')
+        ax3[1][1].set_ylabel('EL with regularization')
+        ax3[1][1].set_title('AlSi2Sr / EL', fontstyle='oblique')
+        ax3[1][1].scatter(x_testing_[:, 3], y_testing_[:, 2],
+                          label='Testing data')
+        ax3[1][1].scatter(x_training_[:, 3], y_training_[:, 2],
+                          label='Training data')
+        fitting_w_311, fitting_b_311 = linear_fitting(x_testing_[:, 3],
+                                                      y_testing_[:, 2])
+        ax3[1][1].plot(x_AlSi2Sr, fitting_w_311 * x_AlSi2Sr + fitting_b_311, color='red',
+                       linestyle='dashed', label='y = %.2f + (%.2f)x' % (fitting_b_311, fitting_w_311))
+        ax3[1][1].legend()
         plt.savefig(path + 'phase_EL_allRE.png', bbox_inches='tight')
-        linear_coef_allRE = pd.DataFrame(data=np.ones((9, 2)),
-                                         index=['UTS_Al_1', 'UTS_Al_2+Si', 'UTS_AlSc2Si2', 'YS_Al_1', 'YS_Al_2+Si', 'YS_AlSc2Si2', 'EL_Al_1', 'EL_Al_2+Si', 'EL_AlSc2Si2'], columns=['weight', 'bias'])
+        linear_coef_allRE = pd.DataFrame(data=np.ones((12, 2)),
+                                         index=['UTS_Al_1', 'UTS_Al_2', 'UTS_Si', 'UTS_AlSi2Sr',
+                                                'YS_Al_1', 'YS_Al_2', 'YS_Si', 'YS_AlSi2Sr',
+                                                'EL_Al_1', 'EL_Al_2', 'EL_Si', 'EL_AlSi2Sr'],
+                                         columns=['weight', 'bias'])
         # UTS
-        linear_coef_allRE.iloc[0, 0] = fitting_w_10
-        linear_coef_allRE.iloc[0, 1] = fitting_b_10
-        linear_coef_allRE.iloc[1, 0] = fitting_w_11
-        linear_coef_allRE.iloc[1, 1] = fitting_b_11
-        linear_coef_allRE.iloc[2, 0] = fitting_w_12
-        linear_coef_allRE.iloc[2, 1] = fitting_b_12
+        linear_coef_allRE.iloc[0, 0] = fitting_w_100
+        linear_coef_allRE.iloc[0, 1] = fitting_b_100
+        linear_coef_allRE.iloc[1, 0] = fitting_w_101
+        linear_coef_allRE.iloc[1, 1] = fitting_b_101
+        linear_coef_allRE.iloc[2, 0] = fitting_w_110
+        linear_coef_allRE.iloc[2, 1] = fitting_b_110
+        linear_coef_allRE.iloc[3, 0] = fitting_w_111
+        linear_coef_allRE.iloc[3, 1] = fitting_b_111
         # YS
-        linear_coef_allRE.iloc[3, 0] = fitting_w_20
-        linear_coef_allRE.iloc[3, 1] = fitting_b_20
-        linear_coef_allRE.iloc[4, 0] = fitting_w_21
-        linear_coef_allRE.iloc[4, 1] = fitting_b_21
-        linear_coef_allRE.iloc[5, 0] = fitting_w_22
-        linear_coef_allRE.iloc[5, 1] = fitting_b_22
+        linear_coef_allRE.iloc[4, 0] = fitting_w_200
+        linear_coef_allRE.iloc[4, 1] = fitting_b_200
+        linear_coef_allRE.iloc[5, 0] = fitting_w_201
+        linear_coef_allRE.iloc[5, 1] = fitting_b_201
+        linear_coef_allRE.iloc[6, 0] = fitting_w_210
+        linear_coef_allRE.iloc[6, 1] = fitting_b_210
+        linear_coef_allRE.iloc[7, 0] = fitting_w_211
+        linear_coef_allRE.iloc[7, 1] = fitting_b_211
         # EL
-        linear_coef_allRE.iloc[6, 0] = fitting_w_30
-        linear_coef_allRE.iloc[6, 1] = fitting_b_30
-        linear_coef_allRE.iloc[7, 0] = fitting_w_31
-        linear_coef_allRE.iloc[7, 1] = fitting_b_31
-        linear_coef_allRE.iloc[8, 0] = fitting_w_32
-        linear_coef_allRE.iloc[8, 1] = fitting_b_32
-        linear_coef_allRE.to_csv(path + 'linear_coef_allRE.csv',
-                                 float_format='%.2f')
+        linear_coef_allRE.iloc[8, 0] = fitting_w_300
+        linear_coef_allRE.iloc[8, 1] = fitting_b_300
+        linear_coef_allRE.iloc[9, 0] = fitting_w_301
+        linear_coef_allRE.iloc[9, 1] = fitting_b_301
+        linear_coef_allRE.iloc[10, 0] = fitting_w_310
+        linear_coef_allRE.iloc[10, 1] = fitting_b_310
+        linear_coef_allRE.iloc[11, 0] = fitting_w_311
+        linear_coef_allRE.iloc[11, 1] = fitting_b_311
+        linear_coef_allRE.to_csv(
+            path + 'linear_coef_allRE.csv', float_format='%.2f')
         # plt.show()
 
     # 获取数据
 
-    x, y_UTS, y_YS, y_EL, EL_Si, EL_Mg = get_training_data(
+    x, y_UTS, y_YS, y_EL, EL_Sr = get_training_data(
         training_data_file_path)
     x_testing, y_UTS_testing, y_YS_testing, y_EL_testing = get_testing_data(
         training_data_file_path)
-    x_predicting, EL_Si_predicting, EL_Mg_predicting = get_predicting_data(
+    x_predicting, EL_Sr_predicting = get_predicting_data(
         predicting_data_file_path)
 
     # 执行正则化，并记住训练集数据的正则化规则,运用于测试集数据
@@ -689,12 +836,15 @@ def main(parameters_list):
             print('==================Prediction complete===================')
 
             # 数据可视化(散点图)
-            draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_UTS.numpy(),
-                         EL_Si_predicting.numpy(), EL_Mg_predicting.numpy(), y_predicting.numpy()[:, 0], 'UTS / MPa', training_accuracy[0], testing_accuracy[0])
-            draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_YS.numpy(),
-                         EL_Si_predicting.numpy(), EL_Mg_predicting.numpy(), y_predicting.numpy()[:, 1], 'YS / MPa', training_accuracy[1], testing_accuracy[1])
-            draw_scatter(EL_Si.numpy(), EL_Mg.numpy(), y_EL.numpy(),
-                         EL_Si_predicting.numpy(), EL_Mg_predicting.numpy(), y_predicting.numpy()[:, 2], 'EL / %', training_accuracy[2], testing_accuracy[2])
+            draw_scatter(EL_Sr.numpy(), y_UTS.numpy(),
+                         EL_Sr_predicting.numpy(), y_predicting.numpy()[:, 0],
+                         'UTS / MPa', training_accuracy[0], testing_accuracy[0])
+            draw_scatter(EL_Sr.numpy(), y_YS.numpy(),
+                         EL_Sr_predicting.numpy(), y_predicting.numpy()[:, 1],
+                         'YS / MPa', training_accuracy[1], testing_accuracy[1])
+            draw_scatter(EL_Sr.numpy(), y_EL.numpy(),
+                         EL_Sr_predicting.numpy(), y_predicting.numpy()[:, 2],
+                         'EL / %', training_accuracy[2], testing_accuracy[2])
 
             # 综合力学性能计算及可视化
             # data_process(path, EL_Si_predicting.numpy(), EL_Mg_predicting.numpy())
