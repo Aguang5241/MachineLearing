@@ -24,7 +24,7 @@ def main():
 
     e = torch.tensor([3, 3, 0.1]).float()
     predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\Data\\Perdicting_data.csv'
-    training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\Data\\Training_data.csv'
+    training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\Data\\Training_data_part_2.csv'
     features = 4
     layer_1 = 12
     layer_2 = 6
@@ -36,12 +36,12 @@ def main():
     train = input('Train or Not(Y/N)')
     if train.lower() == 'y':
         learning_rate = 1e-4
-        loss_threashold_value = 0.892
+        loss_threashold_value = 1e-2
         loop_max = 1e5
         index = np.random.randn(1)
         path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Train\\%.3f\\' % index
         train_start_index = 0
-        train_end_index = 11
+        train_end_index = 6
         error = e.repeat(train_end_index - train_start_index, 1)
         upper_limit = 3
         lower_limit = -(upper_limit / 8) * 2
@@ -65,11 +65,11 @@ def main():
         re_index = np.random.randn(1)
         re_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Retrain\\%.3f\\' % re_index
         train_start_index = 0
-        train_end_index = 11
+        train_end_index = 8
         re_error = e.repeat(train_end_index - train_start_index, 1)
         re_upper_limit = 3
         re_lower_limit = -(re_upper_limit / 8) * 2
-        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Retrain\\0-8_1e-2\\model.pkl'
+        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Train\\part1\\model.pkl'
         retrain_parameters_list = [re_learning_rate, re_loss_threashold_value, re_error, re_loop_max, re_path,
                                    train_start_index, train_end_index, training_data_file_path, predicting_data_file_path, re_upper_limit, re_lower_limit, Net, features, layer_1, layer_2, old_model_path]
         retraining_break = Model_retrain.main(retrain_parameters_list)
@@ -86,8 +86,8 @@ def main():
         pro_index = np.random.randn(1)
         pro_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Process\\%.3f\\' % pro_index
         train_start_index = 0
-        train_end_index = 11
-        model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Retrain\\0-4-8-11_1e-2\\model.pkl'
+        train_end_index = 8
+        model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Retrain\\part2\\model.pkl'
         pro_parameters_list = [pro_path, train_start_index, train_end_index,
                                training_data_file_path, predicting_data_file_path,
                                model_path]
