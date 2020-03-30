@@ -185,7 +185,7 @@ def main(parameters_list):
             fig_name = 'YS'
         else:
             fig_name = 'EL'
-        max_indexes = np.argpartition(y_predicting, -2)[-2:]
+        # max_indexes = np.argpartition(y_predicting, -2)[-2:]
         sns.set(font="Times New Roman", font_scale=1)
         fig = plt.figure()
         ax = plt.subplot()
@@ -196,7 +196,7 @@ def main(parameters_list):
         ax.scatter(x_predicting, y_predicting, label='Predicting data')
         ax.scatter(x_training, y_training, color='red',
                    s=50, label='Training data')
-        ax.scatter(x_predicting[max_indexes], y_predicting[max_indexes])
+        # ax.scatter(x_predicting[max_indexes], y_predicting[max_indexes])
         ax.legend(loc='upper right')
         plt.savefig(path + 'elements_%s.png' % fig_name)
         plt.show()

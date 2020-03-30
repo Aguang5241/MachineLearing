@@ -66,7 +66,7 @@ def main(parameters_list):
             (torch.from_numpy(data['YS'].values)), dim=1).float()
         y_EL = torch.unsqueeze(
             (torch.from_numpy(data['EL'].values)), dim=1).float()
-        EL_Si = torch.unsqueeze(
+        EL_Sr = torch.unsqueeze(
             (torch.from_numpy(data['EL_Sr'].values)), dim=1).float()
         return x, y_UTS, y_YS, y_EL, EL_Sr
 
