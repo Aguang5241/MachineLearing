@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 
 # 定义神经网络
 
-class Net(torch.nn.Module):
+class Ge_Net(torch.nn.Module):
     def __init__(self, n_feature, n_hidden, n_output):
-        super(Net, self).__init__()
+        super(Ge_Net, self).__init__()
         self.hidden = torch.nn.Linear(n_feature, n_hidden)
         self.predict = torch.nn.Linear(n_hidden, n_output)
 
@@ -47,7 +47,7 @@ def main(parameters_list):
 
     def train(x, y):
         # 实例化神经网络
-        net = Net(n_feature=1, n_hidden=hidden_layer,
+        net = Ge_Net(n_feature=1, n_hidden=hidden_layer,
                    n_output=features)
         # Adam优化器
         optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
