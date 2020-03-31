@@ -7,6 +7,7 @@
 #                optimizer: Adam                          #
 ###########################################################
 
+import Model_generate
 import Model_train
 import Model_retrain
 import Model_process
@@ -23,11 +24,29 @@ Net = Model_NN.Net
 def main():
 
     e = torch.tensor([3, 3, 0.1]).float()
-    predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\Data\\Perdicting_data.csv'
-    training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\Data\\Training_data_part_2.csv'
+    predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Data\\Perdicting_data.csv'
+    training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Data\\Training_data_part_1.csv'
     features = 4
     layer_1 = 12
     layer_2 = 6
+
+    ############################################################
+    #                      Generate                            #
+    ############################################################
+    generate = input('Train or Not(Y/N)')
+    if generate.lower() == 'y':
+        ge_index = np.random.randn(1)
+        ge_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Generate\\%.3f\\' % ge_index
+        hidden_layer = 8
+        ge_learning_rate = 1e-4
+        ge_loop_max = 1e5
+        ge_loss_threashold_value = 1e-7
+        generate_parameters_list = [training_data_file_path, ge_path, features, hidden_layer,
+                                 ge_learning_rate, ge_loop_max, ge_loss_threashold_value]
+        ge_training_break = Model_generate.main(generate_parameters_list)
+        if not ge_training_break:
+            print('\n+++++++++++++++++Model generate complete++++++++++++++++')
+            print('Generate: the index of file ---> %.3f\n' % ge_index)
 
     ############################################################
     #                        Train                             #

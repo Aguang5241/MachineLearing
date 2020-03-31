@@ -167,7 +167,7 @@ def main(parameters_list):
 
         return training_break
 
-    # 定义测试函数
+    # 定义预测函数
 
     def predict(model_path, x):
         net = torch.load(model_path)
