@@ -15,22 +15,22 @@ def main(parameters_list):
 
     # 初始化参数
 
-    learning_rate = parameters_list[0]
-    loss_threashold_value = parameters_list[1]
-    error = parameters_list[2]
+    training_data_file_path = parameters_list[0]
+    predicting_data_file_path = parameters_list[1]
+    features = parameters_list[2]
     loop_max = parameters_list[3]
-    path = parameters_list[4]
-    train_start_index = parameters_list[5]
-    train_end_index = parameters_list[6]
-    training_data_file_path = parameters_list[7]
-    predicting_data_file_path = parameters_list[8]
-    upper_limit = parameters_list[9]
-    lower_limit = parameters_list[10]
-    Net = parameters_list[11]
-    features = parameters_list[12]
-    layer_1 = parameters_list[13]
-    layer_2 = parameters_list[14]
-    old_model_path = parameters_list[15]
+    ANN_I_layer_1 = parameters_list[4]
+    ANN_I_layer_2 = parameters_list[5]
+    Net = parameters_list[6]
+    path = parameters_list[7]
+    old_model_path = parameters_list[8]
+    learning_rate = parameters_list[9]
+    loss_threashold_value = parameters_list[10]
+    train_start_index = parameters_list[11]
+    train_end_index = parameters_list[12]
+    error = parameters_list[13]
+    upper_limit = parameters_list[14]
+    lower_limit = parameters_list[15]
 
     # 定义获取预测数据函数
 
@@ -74,8 +74,8 @@ def main(parameters_list):
 
     def train(x, y, old_model_path):
         # 实例化神经网络
-        net = Net(n_feature=features, n_hidden1=layer_1,
-                  n_hidden2=layer_2, n_output=3)
+        net = Net(n_feature=features, n_hidden1=ANN_I_layer_1,
+                  n_hidden2=ANN_I_layer_2, n_output=3)
         # 加载模型
         old_model_dict = torch.load(old_model_path).state_dict()
         net.load_state_dict(old_model_dict)

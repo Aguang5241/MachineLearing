@@ -12,16 +12,16 @@ def main(parameters_list):
 
     # 初始化参数
 
-    path = parameters_list[0]
+    training_data_file_path = parameters_list[0]
+    predicting_data_file_path = parameters_list[1]
+    path = parameters_list[2]
+    model_path = parameters_list[3]
+    train_start_index = parameters_list[4]
+    train_end_index = parameters_list[5]
     if os.path.exists(path):
         pass
     else:
         os.makedirs(path)
-    train_start_index = parameters_list[1]
-    train_end_index = parameters_list[2]
-    training_data_file_path = parameters_list[3]
-    predicting_data_file_path = parameters_list[4]
-    model_path = parameters_list[5]
 
     # 定义获取预测数据函数
 

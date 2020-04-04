@@ -14,21 +14,21 @@ from sklearn.preprocessing import StandardScaler
 def main(parameters_list):
 
     # 初始化参数
-    learning_rate = parameters_list[0]
-    loss_threashold_value = parameters_list[1]
-    error = parameters_list[2]
+    training_data_file_path = parameters_list[0]
+    predicting_data_file_path = parameters_list[1]
+    features = parameters_list[2]
     loop_max = parameters_list[3]
-    path = parameters_list[4]
-    train_start_index = parameters_list[5]
-    train_end_index = parameters_list[6]
-    training_data_file_path = parameters_list[7]
-    predicting_data_file_path = parameters_list[8]
-    upper_limit = parameters_list[9]
-    lower_limit = parameters_list[10]
-    Net = parameters_list[11]
-    features = parameters_list[12]
-    layer_1 = parameters_list[13]
-    layer_2 = parameters_list[14]
+    ANN_I_layer_1 = parameters_list[4]
+    ANN_I_layer_2 = parameters_list[5]
+    Net = parameters_list[6]
+    path = parameters_list[7]
+    learning_rate = parameters_list[8]
+    loss_threashold_value = parameters_list[9]
+    train_start_index = parameters_list[10]
+    train_end_index = parameters_list[11]
+    error = parameters_list[12]
+    upper_limit = parameters_list[13]
+    lower_limit = parameters_list[14]
 
     # 定义获取预测数据函数
 
@@ -72,8 +72,8 @@ def main(parameters_list):
 
     def train(x, y):
         # 实例化神经网络
-        net = Net(n_feature=features, n_hidden1=layer_1,
-                  n_hidden2=layer_2, n_output=3)
+        net = Net(n_feature=features, n_hidden1=ANN_I_layer_1,
+                  n_hidden2=ANN_I_layer_2, n_output=3)
         # Adam优化器
         optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
         # 损失函数

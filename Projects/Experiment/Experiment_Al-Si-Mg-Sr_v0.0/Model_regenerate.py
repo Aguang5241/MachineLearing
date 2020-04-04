@@ -13,15 +13,15 @@ def main(parameters_list):
     # 初始化参数
 
     training_data_file_path = parameters_list[0]
-    path = parameters_list[1]
-    features = parameters_list[2]
-    hidden_layer = parameters_list[3]
-    learning_rate = parameters_list[4]
-    loop_max = parameters_list[5]
-    loss_threashold_value = parameters_list[6]
-    EL_Sr_predict = parameters_list[7]
-    Net = parameters_list[8]
-    old_model_path = parameters_list[9]
+    features = parameters_list[1]
+    loop_max = parameters_list[2]
+    EL_Sr_predict = parameters_list[3]
+    ANN_II_layer_1 = parameters_list[4]
+    Net = parameters_list[5]
+    path = parameters_list[6]
+    old_model_path = parameters_list[7]
+    learning_rate = parameters_list[8]
+    loss_threashold_value = parameters_list[9]
     train_start_index = parameters_list[10]
     train_end_index = parameters_list[11]
 
@@ -39,7 +39,7 @@ def main(parameters_list):
 
     def train(x, y, old_model_path):
         # 实例化神经网络
-        net = Net(n_feature=1, n_hidden=hidden_layer,
+        net = Net(n_feature=1, n_hidden=ANN_II_layer_1,
                   n_output=features)
         # 加载模型
         old_model_dict = torch.load(old_model_path).state_dict()
