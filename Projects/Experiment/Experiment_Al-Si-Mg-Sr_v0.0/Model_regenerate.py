@@ -21,8 +21,9 @@ def main(parameters_list):
     loss_threashold_value = parameters_list[6]
     EL_Sr_predict = parameters_list[7]
     Net = parameters_list[8]
-    train_start_index = parameters_list[9]
-    train_end_index = parameters_list[10]
+    old_model_path = parameters_list[9]
+    train_start_index = parameters_list[10]
+    train_end_index = parameters_list[11]
 
     # 获取训练数据
 
@@ -36,10 +37,13 @@ def main(parameters_list):
 
     # 定义训练函数
 
-    def train(x, y):
+    def train(x, y, old_model_path):
         # 实例化神经网络
         net = Net(n_feature=1, n_hidden=hidden_layer,
                   n_output=features)
+        # 加载模型
+        old_model_dict = torch.load(old_model_path).state_dict()
+        net.load_state_dict(old_model_dict)
         # Adam优化器
         optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
         # 损失函数
@@ -127,7 +131,7 @@ def main(parameters_list):
 
     # 执行模型训练
 
-    training_break = train(x_standarded, y)
+    training_break = train(x_standarded, y, old_model_path)
 
     # 调用训练好的模型进行评估与预测
 
