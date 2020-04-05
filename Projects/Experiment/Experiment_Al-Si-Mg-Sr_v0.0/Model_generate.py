@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 import seaborn as sns
+import matplotlib
 import matplotlib.pyplot as plt
 
 
@@ -48,8 +49,7 @@ def main(parameters_list):
         loop = 0
         loop_added = 0
         training_break = False
-        predict_y = net(x)
-        loss = loss_func(predict_y, y)
+        loss = 1e9
         # 循环训练
         while loss > loss_threashold_value:
             loop += 1
@@ -96,21 +96,27 @@ def main(parameters_list):
 
     def draw_scatter(x_training, y_training, x_predicting, y_predicting, item):
         if item == 'Al_1 / wt. %':
+            item_ = r'$\alpha$-(Al) / wt. %'
             fig_name = 'Al_1'
         elif item == 'Al_2 / wt. %':
+            item_ = 'Eutectic (Al) / wt. %'
             fig_name = 'Al_2'
         elif item == 'Si / wt. %':
+            item_ = 'Eutectic (Si) / wt. %'
             fig_name = 'Si'
         else:
+            item_ = 'A${l_2}$S${i_2}$Sr / wt. %'
             fig_name = 'AlSi2Sr'
-        sns.set(font="Times New Roman", font_scale=1)
-        fig = plt.figure()
+        sns.set(font="Times New Roman", font_scale=1.3, style='ticks')
+        matplotlib.rcParams['xtick.direction'] = 'in'
+        matplotlib.rcParams['ytick.direction'] = 'in'
+        fig = plt.figure(figsize=(8, 6))
         ax = plt.subplot()
         ax.set_xlabel('Sr / wt. %')
-        ax.set_ylabel(item)
+        ax.set_ylabel(item_)
         ax.scatter(x_predicting, y_predicting, label='Predicting data')
         ax.scatter(x_training, y_training, s=50, label='Training data')
-        ax.legend(loc='upper right')
+        ax.legend(loc='upper right', frameon=False)
         plt.savefig(path + 'elements_%s.png' % fig_name)
         plt.show()
 

@@ -1,6 +1,7 @@
 import os
 import time
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -88,11 +89,9 @@ def main(parameters_list):
         loop_added = 0
         training_break = False
         start_time = time.time()
-        predict_y = net(x)
-        loss_y = torch.abs(predict_y - y)
-        loss = loss_func(loss_y, error)
+        loss = 1e9
         # 图像配置初始化
-        sns.set(font="Times New Roman")
+        sns.set(font="Times New Roman", font_scale=1)
         fig = plt.figure()
         ax = plt.gca()
         ax.set_title('Learning rate: %.2e' % learning_rate)
@@ -190,8 +189,10 @@ def main(parameters_list):
             fig_name = 'YS'
         else:
             fig_name = 'EL'
-        sns.set(font="Times New Roman", font_scale=1)
-        fig = plt.figure()
+        sns.set(font="Times New Roman", font_scale=1.3, style='ticks')
+        matplotlib.rcParams['xtick.direction'] = 'in'
+        matplotlib.rcParams['ytick.direction'] = 'in'
+        fig = plt.figure(figsize=(8, 6))
         ax = plt.subplot()
         ax.set_title('Training accuracy: %.2f %%  Testing accuracy: %.2f %%' % (
             training_accuracy * 100, testing_accuracy * 100))
@@ -200,7 +201,7 @@ def main(parameters_list):
         ax.scatter(x_predicting, y_predicting, label='Predicting data')
         ax.scatter(x_training, y_training,
                    color='red', s=50, label='Training data')
-        ax.legend(loc='upper right')
+        ax.legend(loc='upper right', frameon=False)
         plt.savefig(path + 'elements_%s.png' % fig_name)
         plt.show()
 
