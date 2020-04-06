@@ -192,67 +192,63 @@ def main(parameters_list):
         sns.set(font="Times New Roman", font_scale=1.3, style='ticks')
         matplotlib.rcParams['xtick.direction'] = 'in'
         matplotlib.rcParams['ytick.direction'] = 'in'
-        if item == 'UTS':
-            x_phase = np.linspace(-2.2, 2.7, 100)
-            y_index = 0
-            y_min = -2
-            y_max = 6
-        elif item == 'YS':
-            x_phase = np.linspace(-2.5, 3, 100)
-            y_index = 1
-            y_min = -3
+        y_min = -7
+        y_max = 5
+        if item == 'Al_1':
+            item_name = r'$\alpha$-(Al)'
+            x_phase = np.linspace(-2.2, 1, 100)
+            x_index = 0
+        elif item == 'Al_2':
+            item_name = 'Eutectic (Al)'
+            x_phase = np.linspace(-2.5, 1.5, 100)
+            x_index = 1
+        elif item == 'Si':
+            item_name = 'Eutectic (Si)'
+            x_phase = np.linspace(-1, 3, 100)
+            x_index = 2
             y_max = 7
         else:
-            x_phase = np.linspace(-2.2, 3.5, 100)
-            y_index = 2
-            y_min = -8
+            item_name = 'Al${_2}$Si${_2}$Sr'
+            x_phase = np.linspace(-1, 2, 100)
+            x_index = 3
             y_max = 7
         fig = plt.figure(figsize=(8, 6))
         ax = plt.subplot()
-        ax.set_xlabel('Phase fraction with regularization')
-        ax.set_ylabel('%s with regularization' % item)
+        ax.set_xlabel('Phase fraction of %s with regularization' % item_name)
+        ax.set_ylabel('Performance with regularization')
         ax.set_ylim(y_min, y_max)
-        # Al_1
-        pl11 = ax.scatter(x_testing_[:, 0], y_testing_[:, y_index], s=15)
-        fitting_w1, fitting_b1 = linear_fitting(x_testing_[0:153, 0],
-                                                y_testing_[0:153, y_index])
+        # UTS
+        pl11 = ax.scatter(x_testing_[:, x_index], y_testing_[:, 0], s=15)
+        fitting_w1, fitting_b1 = linear_fitting(x_testing_[0:153, x_index],
+                                                y_testing_[0:153, 0])
         pl12, = ax.plot(x_phase, fitting_w1 * x_phase +
                         fitting_b1, linestyle='dashed', linewidth=2)
-        # Al_2
-        pl21 = ax.scatter(x_testing_[:, 1], y_testing_[:, y_index], s=15)
-        fitting_w2, fitting_b2 = linear_fitting(x_testing_[:, 1],
-                                                y_testing_[:, y_index])
+        # YS
+        pl21 = ax.scatter(x_testing_[:, x_index], y_testing_[:, 1], s=15)
+        fitting_w2, fitting_b2 = linear_fitting(x_testing_[:, x_index],
+                                                y_testing_[:, 1])
         pl22, = ax.plot(x_phase, fitting_w2 * x_phase +
                         fitting_b2, linestyle='dashed', linewidth=2)
-        # Si
-        pl31 = ax.scatter(x_testing_[:, 2], y_testing_[:, y_index], s=15)
-        fitting_w3, fitting_b3 = linear_fitting(x_testing_[:, 2],
-                                                y_testing_[:, y_index])
+        # EL
+        pl31 = ax.scatter(x_testing_[:, x_index], y_testing_[:, 2], s=15)
+        fitting_w3, fitting_b3 = linear_fitting(x_testing_[:, x_index],
+                                                y_testing_[:, 2])
         pl32, = ax.plot(x_phase, fitting_w3 * x_phase +
                         fitting_b3, linestyle='dashed', linewidth=2)
-        # Al2Si2Sr
-        pl41 = ax.scatter(x_testing_[:, 3], y_testing_[:, y_index], s=15)
-        fitting_w4, fitting_b4 = linear_fitting(x_testing_[:, 3],
-                                                y_testing_[:, y_index])
-        pl42, = ax.plot(x_phase, fitting_w4 *
-                        x_phase + fitting_b4, linestyle='dashed', linewidth=2)
-        label11 = r'$\alpha$-(Al)'
+
+        label11 = 'UTS'
         label12 = 'w${_1}$ = %.2f  b${_1}$ = %.2f' % (fitting_w1, fitting_b1)
-        label21 = 'Eutectic (Al)'
+        label21 = 'YS'
         label22 = 'w${_2}$ = %.2f  b${_2}$ = %.2f' % (fitting_w2, fitting_b2)
-        label31 = 'Eutectic (Si)'
+        label31 = 'EL'
         label32 = 'w${_3}$ = %.2f  b${_3}$ = %.2f' % (fitting_w3, fitting_b3)
-        label41 = 'Al${_2}$Si${_2}$Sr'
-        label42 = 'w${_4}$ = %.2f  b${_4}$ = %.2f' % (fitting_w4, fitting_b4)
-        l1 = ax.legend([pl11, pl21, pl31, pl41], [label11, label21, label31, label41],
-                       loc='upper left', frameon=False)
-        l2 = ax.legend([pl12, pl22, pl32, pl42], [label12, label22, label32, label42],
-                       loc='upper right', frameon=False)
-        fig.gca().add_artist(l1)
-        plt.savefig(path + 'phase_%s_allRE.png' % item)
-        linear_coef_allRE = pd.DataFrame(data=np.ones((4, 2)),
-                                         index=['Al_1', 'Al_2',
-                                                'Si', 'AlSi2Sr'],
+
+        plt.legend([pl11, pl21, pl31, pl12, pl22, pl32],
+                   [label11, label21, label31, label12, label22, label32],
+                   loc='upper left', frameon=False, ncol=2)
+        plt.savefig(path + '%s_performance_allRE.png' % item)
+        linear_coef_allRE = pd.DataFrame(data=np.ones((3, 2)),
+                                         index=['UTS', 'YS', 'EL'],
                                          columns=['weight', 'bias'])
         linear_coef_allRE.iloc[0, 0] = fitting_w1
         linear_coef_allRE.iloc[0, 1] = fitting_b1
@@ -260,8 +256,7 @@ def main(parameters_list):
         linear_coef_allRE.iloc[1, 1] = fitting_b2
         linear_coef_allRE.iloc[2, 0] = fitting_w3
         linear_coef_allRE.iloc[2, 1] = fitting_b3
-        linear_coef_allRE.iloc[3, 0] = fitting_w4
-        linear_coef_allRE.iloc[3, 1] = fitting_b4
+
         linear_coef_allRE.to_csv(
             path + '%s_linear_coef_allRE.csv' % item, float_format='%.2f')
         # plt.show()
@@ -322,6 +317,12 @@ def main(parameters_list):
         y_standarded = torch.from_numpy(y_scaler.transform(y_list)).float()
         y_standarded_predict = torch.from_numpy(
             y_scaler.transform(y_predicting)).float()
+        # print(y_standarded_predict[:, 0].min())
+        # print(y_standarded_predict[:, 0].max())
+        # print(y_standarded_predict[:, 1].min())
+        # print(y_standarded_predict[:, 1].max())
+        # print(y_standarded_predict[:, 2].min())
+        # print(y_standarded_predict[:, 2].max())
         if np.isnan(y_predicting.numpy().any()):
             print('==============Prediction run out of range===============')
         else:
@@ -330,15 +331,6 @@ def main(parameters_list):
             # 数据可视化(散点图)
             draw_scatter(EL_Sr.numpy(), y_list.numpy(),
                          EL_Sr_predicting.numpy(), y_predicting.numpy(), error)
-            # draw_scatter(EL_Sr.numpy(), y_UTS.numpy(),
-            #              EL_Sr_predicting.numpy(), y_predicting.numpy()[:, 0],
-            #              'UTS / MPa', training_accuracy[0], testing_accuracy[0], error)
-            # draw_scatter(EL_Sr.numpy(), y_YS.numpy(),
-            #              EL_Sr_predicting.numpy(), y_predicting.numpy()[:, 1],
-            #              'YS / MPa', training_accuracy[1], testing_accuracy[1], error)
-            # draw_scatter(EL_Sr.numpy(), y_EL.numpy(),
-            #              EL_Sr_predicting.numpy(), y_predicting.numpy()[:, 2],
-            #              'EL / %', training_accuracy[2], testing_accuracy[2], error)
 
             # 综合力学性能计算及可视化
             # data_process(path, EL_Si_predicting.numpy(), EL_Mg_predicting.numpy())
@@ -346,13 +338,16 @@ def main(parameters_list):
             # 绘制相分数(正则化)-性能(正则化)关系图
             draw_relation_allRE(x_standarded.numpy(), y_standarded.numpy(),
                                 x_standarded_predict.numpy(), y_standarded_predict.numpy(),
-                                'UTS')
+                                'Al_1')
             draw_relation_allRE(x_standarded.numpy(), y_standarded.numpy(),
                                 x_standarded_predict.numpy(), y_standarded_predict.numpy(),
-                                'YS')
+                                'Al_2')
             draw_relation_allRE(x_standarded.numpy(), y_standarded.numpy(),
                                 x_standarded_predict.numpy(), y_standarded_predict.numpy(),
-                                'EL')
+                                'Si')
+            draw_relation_allRE(x_standarded.numpy(), y_standarded.numpy(),
+                                x_standarded_predict.numpy(), y_standarded_predict.numpy(),
+                                'Al2Si2Sr')
 
 
 if __name__ == '__main__':
