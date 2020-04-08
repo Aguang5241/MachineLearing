@@ -147,18 +147,13 @@ def main():
         path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Process\\%.3f\\' % index
         model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Train\\final\\model.pkl'
         train_end_index = 6
+        add = False
         error = np.array([[[3, 3, 3, 3, 3, 3],
                            [3, 3, 3, 3, 3, 3]],
                           [[3, 3, 3, 3, 3, 3],
                            [3, 3, 3, 3, 3, 3]],
                           [[1, 1, 1, 1, 1, 1],
                            [1, 1, 1, 1, 1, 1]]])
-        # error = np.array([[[3, 3, 3, 3, 3, 3, 3],
-        #                    [3, 3, 3, 3, 3, 3, 3]],
-        #                   [[3, 3, 3, 3, 3, 3, 3],
-        #                    [3, 3, 3, 3, 3, 3, 3]],
-        #                   [[1, 1, 1, 1, 1, 1, 1],
-        #                    [1, 1, 1, 1, 1, 1, 1]]])
         # error = np.array([[[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
         #                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]],
         #                   [[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
@@ -167,7 +162,7 @@ def main():
         #                    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]]])
         parameters_list = [training_data_file_path, predicting_data_file_path,
                            path, model_path, train_start_index,
-                           train_end_index, error]
+                           train_end_index, error, add]
         Model_process.main(parameters_list)
         print('\n++++++++++++++++Model Process complete++++++++++++++++++')
         print('Progress: the index of file ---> %.3f' % index)

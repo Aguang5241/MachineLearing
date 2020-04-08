@@ -21,6 +21,7 @@ def main(parameters_list):
     train_start_index = parameters_list[4]
     train_end_index = parameters_list[5]
     error = parameters_list[6]
+    add = parameters_list[7]
     if os.path.exists(path):
         pass
     else:
@@ -111,16 +112,17 @@ def main(parameters_list):
 
     # 绘制散点图
 
-    def draw_scatter(x_training, y_training, x_predicting, y_predicting, error):
-        # 7data
-        ymin1 = 85
-        ymax1 = 240
-        ymin2 = 7
-        ymax2 = 18
-        # 6data
+    def draw_scatter(x_training, y_training, x_predicting, y_predicting, error, add):
         ymin1 = 80
-        ymax1 = 250
+        ymax1 = 270
+        ymin2 = 7
         ymax2 = 20
+
+
+        if add:
+            y_index = -1
+        else:
+            y_index = train_end_index
 
         sns.set(font="Times New Roman", font_scale=1.3, style='ticks')
         matplotlib.rcParams['xtick.direction'] = 'in'
@@ -140,30 +142,28 @@ def main(parameters_list):
         # UTS
         pl11 = ax1.scatter(x_predicting, y_predicting[:, 0],
                            s=15, color='cornflowerblue')
-        ax1.errorbar(x_training, y_training[:, 0], yerr=error[0], linestyle='None',
-                     capsize=5, ecolor='royalblue')
-        pl12 = ax1.scatter(
-            x_training, y_training[:, 0], s=25, color='royalblue')
+        pl12 = ax1.errorbar(x_training[0:y_index], y_training[0:y_index, 0], yerr=error[0],
+                            linestyle='None', capsize=5, ecolor='royalblue',
+                            fmt='o:', mfc='wheat', mec='royalblue')
         # YS
         pl21 = ax1.scatter(x_predicting, y_predicting[:, 1],
                            s=15, color='mediumseagreen')
-        ax1.errorbar(x_training, y_training[:, 1], yerr=error[1], linestyle='None',
-                     capsize=5, ecolor='green')
-        pl22 = ax1.scatter(x_training, y_training[:, 1], s=25, color='green')
+        pl22 = ax1.errorbar(x_training[0:y_index], y_training[0:y_index, 1], yerr=error[1],
+                            linestyle='None', capsize=5, ecolor='green',
+                            fmt='o:', mfc='wheat', mec='green')
         # EL
         pl31 = ax2.scatter(x_predicting, y_predicting[:, 2],
                            s=15, color='chocolate')
-        ax2.errorbar(x_training, y_training[:, 2], yerr=error[2], linestyle='None',
-                     capsize=5, ecolor='saddlebrown')
-        pl32 = ax2.scatter(
-            x_training, y_training[:, 2], s=25, color='saddlebrown')
+        pl32 = ax2.errorbar(x_training[0:y_index], y_training[0:y_index, 2], yerr=error[2],
+                            linestyle='None', capsize=5, ecolor='saddlebrown',
+                            fmt='o:', mfc='wheat', mec='saddlebrown')
 
-        ax1.vlines(0.005, ymin1, ymax1, linestyles='dashed',
-                   color='r', linewidth=2)
-        ax1.vlines(0.075, ymin1, ymax1, linestyles='dashed',
-                   color='r', linewidth=2)
-        ax1.text(0.01, 130, 'w(Sr) = 0.005', color='r', fontdict={'style': 'italic'})
-        ax1.text(0.08, 130, 'w(Sr) = 0.075', color='r', fontdict={'style': 'italic'})
+        ax1.vlines(0.005, ymin1, ymax1,
+                   linestyles='dashed', linewidth=2)
+        ax1.vlines(0.075, ymin1, ymax1,
+                   linestyles='dashed', linewidth=2)
+        ax1.text(0.01, 130, 'w(Sr) = 0.005', fontdict={'style': 'italic'})
+        ax1.text(0.08, 130, 'w(Sr) = 0.075', fontdict={'style': 'italic'})
 
         label11 = 'Predicted UTS'
         label12 = 'Experimental UTS'
@@ -172,9 +172,41 @@ def main(parameters_list):
         label31 = 'Predicted EL'
         label32 = 'Experimental EL'
 
-        plt.legend([pl11, pl21, pl31, pl12, pl22, pl32],
-                   [label11, label21, label31, label12, label22, label32],
-                   loc='upper right', frameon=False, ncol=2)
+        # Additional
+        if add:
+            # UTS
+            x_add1 = np.array([0.005])
+            y_add1 = np.array([y_training[y_index, 0]])
+            e_add1 = np.array([[3],
+                               [3]])
+            pl_add = ax1.errorbar(x_add1, y_add1, yerr=e_add1,
+                                   linestyle='None', capsize=5, ecolor='r',
+                                   fmt='v', mfc='wheat', mec='r', ms=7)
+            # YS
+            x_add2 = np.array([0.005])
+            y_add2 = np.array([y_training[y_index, 1]])
+            e_add2 = np.array([[3],
+                               [3]])
+            ax1.errorbar(x_add2, y_add2, yerr=e_add2,
+                                   linestyle='None', capsize=5, ecolor='r',
+                                   fmt='v', mfc='wheat', mec='r', ms=7)
+            # EL
+            x_add3 = np.array([0.005])
+            y_add3 = np.array([y_training[y_index, 2]])
+            e_add3 = np.array([[1],
+                               [1]])
+            ax2.errorbar(x_add3, y_add3, yerr=e_add3,
+                                   linestyle='None', capsize=5, ecolor='r',
+                                   fmt='v', mfc='wheat', mec='r', ms=7)
+            label_add = 'Additional experimental data'
+
+            l1 = plt.legend([pl11, pl21, pl31, pl_add ,pl12, pl22, pl32],
+                       [label11, label21, label31, label_add, label12, label22,label32],
+                       loc='upper right', frameon=False, ncol=2)
+        else:
+            plt.legend([pl11, pl21, pl31, pl12, pl22, pl32],
+                       [label11, label21, label31, label12, label22, label32],
+                       loc='upper right', frameon=False, ncol=2)
         plt.savefig(path + 'performance.png')
 
         # plt.show()
@@ -234,7 +266,8 @@ def main(parameters_list):
 
         if Al_line:
             ax.vlines(0.595, -6, 2, linestyles='dashed', linewidth=2)
-            ax.text(0.62, -3, 'f (Al) = 0.595', fontdict={'style': 'italic'})
+            ax.text(0.62, -3, r'f (Al) $\approx$ 0.60',
+                    fontdict={'style': 'italic'})
         if Al2Si2Sr_line:
             ax.vlines(6.32E-7, -6, 4, linestyles='dashed', linewidth=2)
             ax.vlines(0.0010669305, -6, 4, linestyles='dashed', linewidth=2)
@@ -455,7 +488,8 @@ def main(parameters_list):
 
             # 数据可视化(散点图)
             draw_scatter(EL_Sr.numpy(), y_list.numpy(),
-                         EL_Sr_predicting.numpy(), y_predicting.numpy(), error)
+                         EL_Sr_predicting.numpy(), y_predicting.numpy(),
+                         error, add)
 
             # 综合力学性能计算及可视化
             # data_process(path, EL_Si_predicting.numpy(), EL_Mg_predicting.numpy())
