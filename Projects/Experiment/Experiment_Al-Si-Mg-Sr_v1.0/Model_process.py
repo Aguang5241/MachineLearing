@@ -162,8 +162,8 @@ def main(parameters_list):
                    color='r', linewidth=2)
         ax1.vlines(0.075, ymin1, ymax1, linestyles='dashed',
                    color='r', linewidth=2)
-        ax1.text(0.01, 130, 'w(Sr) = 0.005', color='r')
-        ax1.text(0.08, 130, 'w(Sr) = 0.075', color='r')
+        ax1.text(0.01, 130, 'w(Sr) = 0.005', color='r', fontdict={'style': 'italic'})
+        ax1.text(0.08, 130, 'w(Sr) = 0.075', color='r', fontdict={'style': 'italic'})
 
         label11 = 'Predicted UTS'
         label12 = 'Experimental UTS'
@@ -184,6 +184,109 @@ def main(parameters_list):
     def linear_fitting(x, y):
         parameters = np.polyfit(x, y, 1)
         return parameters[0], parameters[1]
+
+    # 绘制相分数(归一化)-性能(归一化)关系图
+
+    def draw_relation_pfmRE(x_training_, y_training_, x_testing_, y_testing_, item):
+        sns.set(font="Times New Roman", font_scale=1.3, style='ticks')
+        matplotlib.rcParams['xtick.direction'] = 'in'
+        matplotlib.rcParams['ytick.direction'] = 'in'
+        y_min = -7
+        y_max = 5
+        Al_line = False
+        Al2Si2Sr_line = False
+
+        if item == 'Al':
+            item_name = 'Al phase'
+            x_min = 0.45
+            x_max = 0.95
+            x_phase = np.linspace(x_min, x_max, 100)
+            x_index1 = 151
+            x_index2 = 0
+            Al_line = True
+        elif item == 'Si':
+            item_name = 'Si phase'
+            x_min = 0.046
+            x_max = 0.054
+            x_phase = np.linspace(x_min, x_max, 100)
+            x_index1 = 151
+            x_index2 = 1
+            y_max = 7
+        else:
+            item_name = 'Al${_2}$Si${_2}$Sr phase'
+            x_min = -0.0002
+            x_max = 0.0022
+            x_phase = np.linspace(x_min, x_max, 100)
+            x_index1 = 151
+            x_index2 = 2
+            y_max = 7
+            Al2Si2Sr_line = True
+
+        xlabel = 'Phase fraction of %s / wt. %%' % item_name
+        ylabel = 'Performance with regularization'
+
+        fig = plt.figure(figsize=(8, 6))
+        ax = plt.subplot()
+        ax.set_ylim(y_min, y_max)
+        ax.set_xlim(x_min, x_max)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+
+        if Al_line:
+            ax.vlines(0.595, -6, 2, linestyles='dashed', linewidth=2)
+            ax.text(0.62, -3, 'f (Al) = 0.595', fontdict={'style': 'italic'})
+        if Al2Si2Sr_line:
+            ax.vlines(6.32E-7, -6, 4, linestyles='dashed', linewidth=2)
+            ax.vlines(0.0010669305, -6, 4, linestyles='dashed', linewidth=2)
+            ax.text(0.0001, -3, 'w(Sr) = 0.005', fontdict={'style': 'italic'})
+            ax.text(0.0012, -3, 'w(Sr) = 0.075', fontdict={'style': 'italic'})
+
+        # UTS
+        pl11 = ax.scatter(x_testing_[:, x_index2], y_testing_[:, 0], s=15)
+        fitting_w1, fitting_b1 = linear_fitting(x_testing_[0:x_index1, x_index2],
+                                                y_testing_[0:x_index1, 0])
+        pl12, = ax.plot(x_phase, fitting_w1 * x_phase +
+                        fitting_b1, linestyle='dashed', linewidth=2)
+        # YS
+        pl21 = ax.scatter(x_testing_[:, x_index2], y_testing_[:, 1], s=15)
+        fitting_w2, fitting_b2 = linear_fitting(x_testing_[0:x_index1, x_index2],
+                                                y_testing_[0:x_index1, 1])
+        pl22, = ax.plot(x_phase, fitting_w2 * x_phase +
+                        fitting_b2, linestyle='dashed', linewidth=2)
+        # EL
+        pl31 = ax.scatter(x_testing_[:, x_index2], y_testing_[:, 2], s=15)
+        fitting_w3, fitting_b3 = linear_fitting(x_testing_[0:x_index1, x_index2],
+                                                y_testing_[0:x_index1, 2])
+        pl32, = ax.plot(x_phase, fitting_w3 * x_phase +
+                        fitting_b3, linestyle='dashed', linewidth=2)
+
+        label11 = 'UTS'
+        label12 = 'w${_{UTS}}$ = %.2f  b${_{UTS}}$ = %.2f' % (
+            fitting_w1, fitting_b1)
+        label21 = 'YS'
+        label22 = 'w${_{YS}}$ = %.2f  b${_{YS}}$ = %.2f' % (
+            fitting_w2, fitting_b2)
+        label31 = 'EL'
+        label32 = 'w${_{EL}}$ = %.2f  b${_{EL}}$ = %.2f' % (
+            fitting_w3, fitting_b3)
+
+        plt.legend([pl11, pl21, pl31, pl12, pl22, pl32],
+                   [label11, label21, label31, label12, label22, label32],
+                   loc='upper left', frameon=False, ncol=2)
+        plt.savefig(path + '%s_performance_pfmRE.png' % item)
+        linear_coef = pd.DataFrame(data=np.ones((3, 2)),
+                                   index=['UTS', 'YS', 'EL'],
+                                   columns=['weight', 'bias'])
+        linear_coef.iloc[0, 0] = fitting_w1
+        linear_coef.iloc[0, 1] = fitting_b1
+        linear_coef.iloc[1, 0] = fitting_w2
+        linear_coef.iloc[1, 1] = fitting_b2
+        linear_coef.iloc[2, 0] = fitting_w3
+        linear_coef.iloc[2, 1] = fitting_b3
+
+        linear_coef.to_csv(
+            path + '%s_linear_coef_pfmRE.csv' % item, float_format='%.2f')
+        # plt.show()
 
     # 绘制相分数(归一化)-性能(归一化)关系图
 
@@ -242,19 +345,22 @@ def main(parameters_list):
                         fitting_b3, linestyle='dashed', linewidth=2)
 
         label11 = 'UTS'
-        label12 = 'w${_{UTS}}$ = %.2f  b${_{UTS}}$ = %.2f' % (fitting_w1, fitting_b1)
+        label12 = 'w${_{UTS}}$ = %.2f  b${_{UTS}}$ = %.2f' % (
+            fitting_w1, fitting_b1)
         label21 = 'YS'
-        label22 = 'w${_{YS}}$ = %.2f  b${_{YS}}$ = %.2f' % (fitting_w2, fitting_b2)
+        label22 = 'w${_{YS}}$ = %.2f  b${_{YS}}$ = %.2f' % (
+            fitting_w2, fitting_b2)
         label31 = 'EL'
-        label32 = 'w${_{EL}}$ = %.2f  b${_{EL}}$ = %.2f' % (fitting_w3, fitting_b3)
+        label32 = 'w${_{EL}}$ = %.2f  b${_{EL}}$ = %.2f' % (
+            fitting_w3, fitting_b3)
 
         plt.legend([pl11, pl21, pl31, pl12, pl22, pl32],
                    [label11, label21, label31, label12, label22, label32],
                    loc='upper left', frameon=False, ncol=2)
         plt.savefig(path + '%s_performance_allRE.png' % item)
         linear_coef = pd.DataFrame(data=np.ones((3, 2)),
-                                         index=['UTS', 'YS', 'EL'],
-                                         columns=['weight', 'bias'])
+                                   index=['UTS', 'YS', 'EL'],
+                                   columns=['weight', 'bias'])
         linear_coef.iloc[0, 0] = fitting_w1
         linear_coef.iloc[0, 1] = fitting_b1
         linear_coef.iloc[1, 0] = fitting_w2
@@ -334,6 +440,14 @@ def main(parameters_list):
         # print(y_predicting[:, 1].max())
         # print(y_predicting[:, 2].min())
         # print(y_predicting[:, 2].max())
+        # print(x_predicting[:, 0].min())
+        # print(x_predicting[:, 0].max())
+        # print(x_predicting[:, 1].min())
+        # print(x_predicting[:, 1].max())
+        # print(x_predicting[:, 2].min())
+        # print(x_predicting[:, 2].max())
+        # print(EL_Sr.numpy().T[0])
+        # print(y_standarded.numpy()[:, 0])
         if np.isnan(y_predicting.numpy().any()):
             print('==============Prediction run out of range===============')
         else:
@@ -355,6 +469,17 @@ def main(parameters_list):
                                 'Si')
             draw_relation_allRE(x_standarded.numpy(), y_standarded.numpy(),
                                 x_standarded_predict.numpy(), y_standarded_predict.numpy(),
+                                'Al2Si2Sr')
+
+            # 绘制相分数-性能(正则化)关系图
+            draw_relation_pfmRE(x.numpy(), y_standarded.numpy(),
+                                x_predicting.numpy(), y_standarded_predict.numpy(),
+                                'Al')
+            draw_relation_pfmRE(x.numpy(), y_standarded.numpy(),
+                                x_predicting.numpy(), y_standarded_predict.numpy(),
+                                'Si')
+            draw_relation_pfmRE(x.numpy(), y_standarded.numpy(),
+                                x_predicting.numpy(), y_standarded_predict.numpy(),
                                 'Al2Si2Sr')
 
 

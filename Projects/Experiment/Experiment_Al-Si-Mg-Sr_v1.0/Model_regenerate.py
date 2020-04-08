@@ -109,13 +109,6 @@ def main(parameters_list):
                 ylims=((-0.03, 0.06), (0.5, 1.1)), hspace=0.05, despine=False)
             ax.set_xlabel('Sr / wt. %')
             ax.set_ylabel('Phase fraction / wt. %')
-            # Training
-            ax.scatter(
-                x_training, y_training[:, 0], s=50, color='royalblue', label='Training Al phase')
-            ax.scatter(
-                x_training, y_training[:, 1], s=50, color='saddlebrown', label='Training Si phase')
-            ax.scatter(
-                x_training, y_training[:, 2], s=50, color='green', label='Training Al${_2}$Si${_2}$Sr phase')
             # Predicted
             ax.scatter(
                 x_predicting, y_predicting[:, 0], s=15, color='cornflowerblue', label='Predicted Al phase')
@@ -123,10 +116,13 @@ def main(parameters_list):
                 x_predicting, y_predicting[:, 1], s=15, color='chocolate', label='Predicted Si phase')
             ax.scatter(
                 x_predicting, y_predicting[:, 2], s=15, color='mediumseagreen', label='Predicted Al${_2}$Si${_2}$Sr phase')
-            # addition
-            ax.scatter(x_training, y_training[:, 0], s=50, color='royalblue')
-            ax.scatter(x_training, y_training[:, 1], s=50, color='saddlebrown')
-            ax.scatter(x_training, y_training[:, 2], s=50, color='green')
+            # Training
+            ax.scatter(
+                x_training, y_training[:, 0], s=50, color='royalblue', label='Experimental Al phase')
+            ax.scatter(
+                x_training, y_training[:, 1], s=50, color='saddlebrown', label='Experimental Si phase')
+            ax.scatter(
+                x_training, y_training[:, 2], s=50, color='green', label='Experimental Al${_2}$Si${_2}$Sr phase')
 
             ax.legend(loc='upper right', frameon=False, ncol=2)
 
@@ -151,7 +147,7 @@ def main(parameters_list):
             ax.scatter(
                 x_predicting, y_predicting[:, index], label='Predicted data')
             ax.scatter(
-                x_training, y_training[:, index], s=50, label='Training data')
+                x_training, y_training[:, index], s=50, label='Experimental data')
             ax.legend(loc='upper right', frameon=False)
             plt.savefig(path + 'elements_%s.png' % fig_name)
         plt.show()
