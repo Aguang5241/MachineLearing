@@ -2,7 +2,6 @@ import os
 
 import matplotlib
 import matplotlib.pyplot as plt
-import brokenaxes
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -196,19 +195,19 @@ def main(parameters_list):
         y_max = 5
 
         if item == 'Al':
-            item_name = r'$\alpha$-(Al)'
+            item_name = 'Al phase'
             x_phase = np.linspace(-1.5, 1, 100)
             # x_index1 = -1
             x_index1 = 151
             x_index2 = 0
         elif item == 'Si':
-            item_name = 'Eutectic (Si)'
+            item_name = 'Si phase'
             x_phase = np.linspace(-1, 2.5, 100)
             x_index1 = 151
             x_index2 = 1
             y_max = 7
         else:
-            item_name = 'Al${_2}$Si${_2}$Sr'
+            item_name = 'Al${_2}$Si${_2}$Sr phase'
             x_phase = np.linspace(-1, 2, 100)
             x_index1 = 151
             x_index2 = 2

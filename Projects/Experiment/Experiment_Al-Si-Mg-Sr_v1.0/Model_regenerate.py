@@ -6,6 +6,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 import seaborn as sns
 import matplotlib
+import brokenaxes
 import matplotlib.pyplot as plt
 
 
@@ -98,27 +99,61 @@ def main(parameters_list):
 
     # 绘制散点图
 
-    def draw_scatter(x_training, y_training, x_predicting, y_predicting, item):
-        if item == 'Al / wt. %':
-            item_ = r'$\alpha$-(Al) / wt. %'
-            fig_name = 'Al'
-        elif item == 'Si / wt. %':
-            item_ = 'Eutectic (Si) / wt. %'
-            fig_name = 'Si'
-        else:
-            item_ = 'A${l_2}$S${i_2}$Sr / wt. %'
-            fig_name = 'AlSi2Sr'
+    def draw_scatter(x_training, y_training, x_predicting, y_predicting,  types, item=None):
         sns.set(font="Times New Roman", font_scale=1.3, style='ticks')
         matplotlib.rcParams['xtick.direction'] = 'in'
         matplotlib.rcParams['ytick.direction'] = 'in'
-        fig = plt.figure(figsize=(8, 6))
-        ax = plt.subplot()
-        ax.set_xlabel('Sr / wt. %')
-        ax.set_ylabel(item_)
-        ax.scatter(x_predicting, y_predicting, label='Predicting data')
-        ax.scatter(x_training, y_training, s=50, label='Training data')
-        ax.legend(loc='upper right', frameon=False)
-        plt.savefig(path + 'elements_%s.png' % fig_name)
+        if types == 'whole':
+            fig = plt.figure(figsize=(8, 6))
+            ax = brokenaxes.brokenaxes(
+                ylims=((-0.03, 0.06), (0.5, 1.1)), hspace=0.05, despine=False)
+            ax.set_xlabel('Sr / wt. %')
+            ax.set_ylabel('Phase fraction / wt. %')
+            # Training
+            ax.scatter(
+                x_training, y_training[:, 0], s=50, color='royalblue', label='Training Al phase')
+            ax.scatter(
+                x_training, y_training[:, 1], s=50, color='saddlebrown', label='Training Si phase')
+            ax.scatter(
+                x_training, y_training[:, 2], s=50, color='green', label='Training Al${_2}$Si${_2}$Sr phase')
+            # Predicted
+            ax.scatter(
+                x_predicting, y_predicting[:, 0], s=15, color='cornflowerblue', label='Predicted Al phase')
+            ax.scatter(
+                x_predicting, y_predicting[:, 1], s=15, color='chocolate', label='Predicted Si phase')
+            ax.scatter(
+                x_predicting, y_predicting[:, 2], s=15, color='mediumseagreen', label='Predicted Al${_2}$Si${_2}$Sr phase')
+            # addition
+            ax.scatter(x_training, y_training[:, 0], s=50, color='royalblue')
+            ax.scatter(x_training, y_training[:, 1], s=50, color='saddlebrown')
+            ax.scatter(x_training, y_training[:, 2], s=50, color='green')
+
+            ax.legend(loc='upper right', frameon=False, ncol=2)
+
+            plt.savefig(path + 'elements_%s.png' % types)
+        else:
+            if item == 'Al / wt. %':
+                item_ = 'Phase fraction of Al phase / wt. %'
+                fig_name = 'Al'
+                index = 0
+            elif item == 'Si / wt. %':
+                item_ = 'Phase fraction of Si phase / wt. %'
+                fig_name = 'Si'
+                index = 1
+            else:
+                item_ = 'Phase fraction of Al${_2}$Si${_2}$Sr phase/ wt. %'
+                fig_name = 'AlSi2Sr'
+                index = 2
+            fig = plt.figure(figsize=(8, 6))
+            ax = plt.subplot()
+            ax.set_xlabel('Sr / wt. %')
+            ax.set_ylabel(item_)
+            ax.scatter(
+                x_predicting, y_predicting[:, index], label='Predicted data')
+            ax.scatter(
+                x_training, y_training[:, index], s=50, label='Training data')
+            ax.legend(loc='upper right', frameon=False)
+            plt.savefig(path + 'elements_%s.png' % fig_name)
         plt.show()
 
     # 获取数据
@@ -152,12 +187,14 @@ def main(parameters_list):
 
                 # 数据可视化(散点图)
 
-                draw_scatter(EL_Sr.numpy(), y[:, 0].numpy(), EL_Sr_predict.numpy(),
-                             y_predicting[:, 0].numpy(), 'Al / wt. %')
-                draw_scatter(EL_Sr.numpy(), y[:, 1].numpy(), EL_Sr_predict.numpy(),
-                             y_predicting[:, 1].numpy(), 'Si / wt. %')
-                draw_scatter(EL_Sr.numpy(), y[:, 2].numpy(), EL_Sr_predict.numpy(),
-                             y_predicting[:, 2].numpy(), 'AlSi2Sr / wt. %')
+                draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
+                             y_predicting.numpy(), 'part', item='Al / wt. %')
+                draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
+                             y_predicting.numpy(), 'part', item='Si / wt. %')
+                draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
+                             y_predicting.numpy(), 'part', item='AlSi2Sr / wt. %')
+                draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
+                             y_predicting.numpy(), 'whole')
 
     return training_break
 
