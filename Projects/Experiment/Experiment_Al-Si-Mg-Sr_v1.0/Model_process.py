@@ -194,33 +194,35 @@ def main(parameters_list):
         matplotlib.rcParams['ytick.direction'] = 'in'
         y_min = -7
         y_max = 5
-        if item == 'Al_1':
+
+        if item == 'Al':
             item_name = r'$\alpha$-(Al)'
-            x_phase = np.linspace(-2.2, 1, 100)
-            x_index1 = 153
+            x_phase = np.linspace(-1.5, 1, 100)
+            # x_index1 = -1
+            x_index1 = 151
             x_index2 = 0
-        elif item == 'Al_2':
-            item_name = 'Eutectic (Al)'
-            x_phase = np.linspace(-2.5, 1.5, 100)
-            x_index1 = -1
-            x_index2 = 1
         elif item == 'Si':
             item_name = 'Eutectic (Si)'
-            x_phase = np.linspace(-1, 3, 100)
-            x_index1 = -1
-            x_index2 = 2
+            x_phase = np.linspace(-1, 2.5, 100)
+            x_index1 = 151
+            x_index2 = 1
             y_max = 7
         else:
             item_name = 'Al${_2}$Si${_2}$Sr'
             x_phase = np.linspace(-1, 2, 100)
-            x_index1 = -1
-            x_index2 = 3
+            x_index1 = 151
+            x_index2 = 2
             y_max = 7
+
+        xlabel = 'Phase fraction of %s with regularization' % item_name
+        ylabel = 'Performance with regularization'
+
         fig = plt.figure(figsize=(8, 6))
         ax = plt.subplot()
-        ax.set_xlabel('Phase fraction of %s with regularization' % item_name)
-        ax.set_ylabel('Performance with regularization')
         ax.set_ylim(y_min, y_max)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+
         # UTS
         pl11 = ax.scatter(x_testing_[:, x_index2], y_testing_[:, 0], s=15)
         fitting_w1, fitting_b1 = linear_fitting(x_testing_[0:x_index1, x_index2],
@@ -251,17 +253,17 @@ def main(parameters_list):
                    [label11, label21, label31, label12, label22, label32],
                    loc='upper left', frameon=False, ncol=2)
         plt.savefig(path + '%s_performance_allRE.png' % item)
-        linear_coef_allRE = pd.DataFrame(data=np.ones((3, 2)),
+        linear_coef = pd.DataFrame(data=np.ones((3, 2)),
                                          index=['UTS', 'YS', 'EL'],
                                          columns=['weight', 'bias'])
-        linear_coef_allRE.iloc[0, 0] = fitting_w1
-        linear_coef_allRE.iloc[0, 1] = fitting_b1
-        linear_coef_allRE.iloc[1, 0] = fitting_w2
-        linear_coef_allRE.iloc[1, 1] = fitting_b2
-        linear_coef_allRE.iloc[2, 0] = fitting_w3
-        linear_coef_allRE.iloc[2, 1] = fitting_b3
+        linear_coef.iloc[0, 0] = fitting_w1
+        linear_coef.iloc[0, 1] = fitting_b1
+        linear_coef.iloc[1, 0] = fitting_w2
+        linear_coef.iloc[1, 1] = fitting_b2
+        linear_coef.iloc[2, 0] = fitting_w3
+        linear_coef.iloc[2, 1] = fitting_b3
 
-        linear_coef_allRE.to_csv(
+        linear_coef.to_csv(
             path + '%s_linear_coef_allRE.csv' % item, float_format='%.2f')
         # plt.show()
 
@@ -327,6 +329,12 @@ def main(parameters_list):
         # print(y_standarded_predict[:, 1].max())
         # print(y_standarded_predict[:, 2].min())
         # print(y_standarded_predict[:, 2].max())
+        # print(y_predicting[:, 0].min())
+        # print(y_predicting[:, 0].max())
+        # print(y_predicting[:, 1].min())
+        # print(y_predicting[:, 1].max())
+        # print(y_predicting[:, 2].min())
+        # print(y_predicting[:, 2].max())
         if np.isnan(y_predicting.numpy().any()):
             print('==============Prediction run out of range===============')
         else:
@@ -342,10 +350,7 @@ def main(parameters_list):
             # 绘制相分数(正则化)-性能(正则化)关系图
             draw_relation_allRE(x_standarded.numpy(), y_standarded.numpy(),
                                 x_standarded_predict.numpy(), y_standarded_predict.numpy(),
-                                'Al_1')
-            draw_relation_allRE(x_standarded.numpy(), y_standarded.numpy(),
-                                x_standarded_predict.numpy(), y_standarded_predict.numpy(),
-                                'Al_2')
+                                'Al')
             draw_relation_allRE(x_standarded.numpy(), y_standarded.numpy(),
                                 x_standarded_predict.numpy(), y_standarded_predict.numpy(),
                                 'Si')

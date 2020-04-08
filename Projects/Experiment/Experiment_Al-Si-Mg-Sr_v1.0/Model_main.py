@@ -12,7 +12,6 @@ import Model_regenerate
 import Model_train
 import Model_retrain
 import Model_process
-import Model_NN
 import Model_ANN_I
 import Model_ANN_II
 
@@ -23,10 +22,10 @@ import numpy as np
 def main():
 
     # Common
-    training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Data\\Training_data_part.csv'
-    predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Regenerate\\final_7data\\generate_results.csv'
-    # training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Data\\Training_data.csv'
-    # predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Data\\Predicting_data.csv'
+    training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Data\\Training_data_process.csv'
+    predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Regenerate\\final_7data\\generate_results.csv'
+    # training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Data\\Training_data.csv'
+    # predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Data\\Predicting_data.csv'
     features = 3
     index = np.random.randn(1)
     loop_max = 1e5
@@ -51,7 +50,7 @@ def main():
         # 定义神经网络
         Net = Model_ANN_II.Net
 
-        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Generate\\%.3f\\' % index
+        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Generate\\%.3f\\' % index
         learning_rate = 1e-3
         loss_threashold_value = 1e-7
         train_end_index = 6
@@ -72,10 +71,10 @@ def main():
         # 定义神经网络
         Net = Model_ANN_II.Net
 
-        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Regenerate\\%.3f\\' % index
-        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Generate\\final\\generate_model.pkl'
+        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Regenerate\\%.3f\\' % index
+        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Generate\\final\\generate_model.pkl'
         learning_rate = 1e-5
-        loss_threashold_value = 1.02e-7
+        loss_threashold_value = 1e-7
         train_end_index = 7
         parameters_list = [training_data_file_path, features, loop_max, EL_Sr_predict,
                            ANN_II_layer_1, Net, path, old_model_path, learning_rate,
@@ -94,10 +93,10 @@ def main():
         # 定义神经网络
         Net = Model_ANN_I.Net
 
-        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Train\\%.3f\\' % index
+        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Train\\%.3f\\' % index
         learning_rate = 1e-4
         loss_threashold_value = 1e-2
-        train_end_index = 8
+        train_end_index = 6
         error = e.repeat(train_end_index - train_start_index, 1)
         upper_limit = 3
         lower_limit = -(upper_limit / 8) * 2
@@ -119,11 +118,11 @@ def main():
         # 定义神经网络
         Net = Model_ANN_I.Net
 
-        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Retrain\\%.3f\\' % index
-        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Retrain\\0-4-8\\model.pkl'
-        learning_rate = 1e-3
+        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Retrain\\%.3f\\' % index
+        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Train\\final\\model.pkl'
+        learning_rate = 1e-4
         loss_threashold_value = 1e-2
-        train_end_index = 11
+        train_end_index = 7
         error = e.repeat(train_end_index - train_start_index, 1)
         upper_limit = 3
         lower_limit = -(upper_limit / 8) * 2
@@ -143,24 +142,23 @@ def main():
     process = input('Process or Not(Y/N)')
     if process.lower() == 'y':
         # 定义神经网络
-        # Net = Model_ANN_I.Net
-        Net = Model_NN.Net
+        Net = Model_ANN_I.Net
 
-        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Process\\%.3f\\' % index
-        model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v0.0\\res\\Retrain\\0-4-8-11_1e-2\\model.pkl'
-        train_end_index = 7
-        # error = np.array([[[3, 3, 3, 3, 3, 3],
-        #                    [3, 3, 3, 3, 3, 3]],
-        #                   [[3, 3, 3, 3, 3, 3],
-        #                    [3, 3, 3, 3, 3, 3]],
-        #                   [[1, 1, 1, 1, 1, 1],
-        #                    [1, 1, 1, 1, 1, 1]]])
-        error = np.array([[[3, 3, 3, 3, 3, 3, 3],
-                           [3, 3, 3, 3, 3, 3, 3]],
-                          [[3, 3, 3, 3, 3, 3, 3],
-                           [3, 3, 3, 3, 3, 3, 3]],
-                          [[1, 1, 1, 1, 1, 1, 1],
-                           [1, 1, 1, 1, 1, 1, 1]]])
+        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Process\\%.3f\\' % index
+        model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Train\\final\\model.pkl'
+        train_end_index = 6
+        error = np.array([[[3, 3, 3, 3, 3, 3],
+                           [3, 3, 3, 3, 3, 3]],
+                          [[3, 3, 3, 3, 3, 3],
+                           [3, 3, 3, 3, 3, 3]],
+                          [[1, 1, 1, 1, 1, 1],
+                           [1, 1, 1, 1, 1, 1]]])
+        # error = np.array([[[3, 3, 3, 3, 3, 3, 3],
+        #                    [3, 3, 3, 3, 3, 3, 3]],
+        #                   [[3, 3, 3, 3, 3, 3, 3],
+        #                    [3, 3, 3, 3, 3, 3, 3]],
+        #                   [[1, 1, 1, 1, 1, 1, 1],
+        #                    [1, 1, 1, 1, 1, 1, 1]]])
         # error = np.array([[[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
         #                    [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]],
         #                   [[3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
