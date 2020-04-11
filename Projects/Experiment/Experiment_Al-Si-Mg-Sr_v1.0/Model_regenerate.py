@@ -26,6 +26,7 @@ def main(parameters_list):
     loss_threashold_value = parameters_list[9]
     train_start_index = parameters_list[10]
     train_end_index = parameters_list[11]
+    error = parameters_list[12]
 
     # 获取训练数据
 
@@ -99,14 +100,14 @@ def main(parameters_list):
 
     # 绘制散点图
 
-    def draw_scatter(x_training, y_training, x_predicting, y_predicting,  types, item=None):
+    def draw_scatter(x_training, y_training, x_predicting, y_predicting, types, error, item=None):
         sns.set(font="Times New Roman", font_scale=1.3, style='ticks')
         matplotlib.rcParams['xtick.direction'] = 'in'
         matplotlib.rcParams['ytick.direction'] = 'in'
         if types == 'whole':
             fig = plt.figure(figsize=(8, 6))
             ax = brokenaxes.brokenaxes(
-                ylims=((-0.03, 0.06), (0.5, 1.1)), hspace=0.05, despine=False)
+                ylims=((-0.03, 0.09), (0.39, 1.15)), hspace=0.05, despine=False)
             ax.set_xlabel('Sr / wt. %')
             ax.set_ylabel('Phase fraction / wt. %')
             # Predicted
@@ -117,13 +118,19 @@ def main(parameters_list):
             ax.scatter(
                 x_predicting, y_predicting[:, 2], s=15, color='mediumseagreen', label='Predicted Al${_2}$Si${_2}$Sr phase')
             # Training
-            ax.scatter(
-                x_training, y_training[:, 0], s=50, color='royalblue', label='Experimental Al phase')
-            ax.scatter(
-                x_training, y_training[:, 1], s=50, color='saddlebrown', label='Experimental Si phase')
-            ax.scatter(
-                x_training, y_training[:, 2], s=50, color='green', label='Experimental Al${_2}$Si${_2}$Sr phase')
-
+            ax.errorbar(x_training, y_training[:, 0], yerr=error[0],
+                        linestyle='None', capsize=5, ecolor='royalblue',
+                        fmt='o:', mfc='wheat', mec='royalblue',
+                        label='Experimental Al phase')
+            ax.errorbar(x_training, y_training[:, 1], yerr=error[1],
+                        linestyle='None', capsize=5, ecolor='saddlebrown',
+                        fmt='o:', mfc='wheat', mec='saddlebrown',
+                        label='Experimental Si phase')
+            ax.errorbar(x_training, y_training[:, 2], yerr=error[2],
+                        linestyle='None', capsize=5, ecolor='green',
+                        fmt='o:', mfc='wheat', mec='green',
+                        label='Experimental Al${_2}$Si${_2}$Sr phase')
+            # ax.vlines(0.076, 0, 1)
             ax.legend(loc='upper right', frameon=False, ncol=2)
 
             plt.savefig(path + 'elements_%s.png' % types)
@@ -132,22 +139,33 @@ def main(parameters_list):
                 item_ = 'Phase fraction of Al phase / wt. %'
                 fig_name = 'Al'
                 index = 0
+                y_min = 0.4
+                y_max = 1
             elif item == 'Si / wt. %':
                 item_ = 'Phase fraction of Si phase / wt. %'
                 fig_name = 'Si'
                 index = 1
+                y_min = 0
+                y_max = 0.1
             else:
                 item_ = 'Phase fraction of Al${_2}$Si${_2}$Sr phase/ wt. %'
                 fig_name = 'AlSi2Sr'
                 index = 2
+                y_min = -0.1
+                y_max = 0.1
             fig = plt.figure(figsize=(8, 6))
             ax = plt.subplot()
             ax.set_xlabel('Sr / wt. %')
             ax.set_ylabel(item_)
-            ax.scatter(
-                x_predicting, y_predicting[:, index], label='Predicted data')
-            ax.scatter(
-                x_training, y_training[:, index], s=50, label='Experimental data')
+            ax.set_ylim(y_min, y_max)
+            ax.scatter(x_predicting, y_predicting[:, index],
+                       label='Predicted data')
+            ax.errorbar(x_training, y_training[:, index], yerr=error[index],
+                        linestyle='None', capsize=5, ecolor='saddlebrown',
+                        fmt='o:', mfc='wheat', mec='saddlebrown',
+                        label='Experimental Si phase')
+            # ax.scatter(
+            #     x_training, y_training[:, index], s=50, label='Experimental data')
             ax.legend(loc='upper right', frameon=False)
             plt.savefig(path + 'elements_%s.png' % fig_name)
         plt.show()
@@ -184,13 +202,13 @@ def main(parameters_list):
                 # 数据可视化(散点图)
 
                 draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
-                             y_predicting.numpy(), 'part', item='Al / wt. %')
+                             y_predicting.numpy(), 'part', error, item='Al / wt. %',)
                 draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
-                             y_predicting.numpy(), 'part', item='Si / wt. %')
+                             y_predicting.numpy(), 'part', error, item='Si / wt. %', )
                 draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
-                             y_predicting.numpy(), 'part', item='AlSi2Sr / wt. %')
+                             y_predicting.numpy(), 'part', error, item='AlSi2Sr / wt. %', )
                 draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
-                             y_predicting.numpy(), 'whole')
+                             y_predicting.numpy(), 'whole', error)
 
     return training_break
 

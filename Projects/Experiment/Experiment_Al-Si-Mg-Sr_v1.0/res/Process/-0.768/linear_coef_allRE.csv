@@ -1,0 +1,10 @@
+,weight,bias
+UTS_Al,0.80,-0.41
+UTS_Si,0.01,-0.53
+UTS_AlSi2Sr,-1.12,-0.57
+YS_Al,0.14,-0.55
+YS_Si,0.42,-0.45
+YS_AlSi2Sr,-0.20,-0.57
+EL_Al,-1.19,-0.22
+EL_Si,-2.32,-0.71
+EL_AlSi2Sr,1.66,0.01
