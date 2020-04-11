@@ -70,7 +70,10 @@ def main(parameters_list):
         EL_Sr = torch.unsqueeze(
             (torch.from_numpy(data['EL_Sr'].values)), dim=1).float()
         return x, y_UTS, y_YS, y_EL, EL_Sr
-
+    
+    def relu_func(x):
+        x = x[x < 0] = 0
+        return x
     # 定义训练函数
 
     def train(x, y, old_model_path):
@@ -91,13 +94,13 @@ def main(parameters_list):
         start_time = time.time()
         loss = 1e9
         # 图像配置初始化
-        sns.set(font="Times New Roman", font_scale=1)
-        fig = plt.figure()
-        ax = plt.gca()
-        ax.set_title('Learning rate: %.2e' % learning_rate)
-        ax.set_xlabel('Loops / K')
-        ax.set_ylabel('Loss value')
-        ax.set_ylim(lower_limit, upper_limit)
+        # sns.set(font="Times New Roman", font_scale=1)
+        # fig = plt.figure()
+        # ax = plt.gca()
+        # ax.set_title('Learning rate: %.2e' % learning_rate)
+        # ax.set_xlabel('Loops / K')
+        # ax.set_ylabel('Loss value')
+        # ax.set_ylim(lower_limit, upper_limit)
         # 循环训练
         while loss > loss_threashold_value:
             loop += 1
@@ -112,9 +115,9 @@ def main(parameters_list):
                     print('Loop: %dK ---' % (loop / 1000),
                           'loss: %.6f' % loss.item())
                     # 可视化误差变化
-                    if loss.item() <= upper_limit:
-                        ax.scatter(loop / 1000, loss.item(), color='red', s=5)
-                        plt.pause(0.1)
+                    # if loss.item() <= upper_limit:
+                    #     ax.scatter(loop / 1000, loss.item(), color='red', s=5)
+                    #     plt.pause(0.1)
             else:
                 user_choice = input('Continue or not(Y/N)')
                 if (user_choice.lower() != 'y'):
@@ -138,8 +141,8 @@ def main(parameters_list):
             # b_2 = net.hidden2.bias
             # b_3 = net.predict.bias
             # general_w = (w_3.mm(w_2)).mm(w_1)
-            # general_b = w_3.mm(w_2.mm(b_1.view(10, 1))) + \
-            #     w_3.mm(b_2.view(5, 1)) + b_3.view(3, 1)
+            # general_b = w_3.mm(w_2.mm(b_1.view(12, 1))) + \
+            #     w_3.mm(b_2.view(6, 1)) + b_3.view(3, 1)
             print('===================Training complete====================')
             print('Total time: %.2fs' % (end_time - start_time))
             # print('Layer1 weight ---> ', w_1)
@@ -166,8 +169,8 @@ def main(parameters_list):
             #            general_w.detach().numpy(), fmt='%.3f', delimiter=',')
             # np.savetxt(path + 'general_b.csv', general_b.detach().numpy(),
             #            fmt='%.3f', delimiter=',')
-            plt.savefig(path + 'learning_curve.png')
-            plt.show()
+            # plt.savefig(path + 'learning_curve.png')
+            # plt.show()
 
         return training_break
 

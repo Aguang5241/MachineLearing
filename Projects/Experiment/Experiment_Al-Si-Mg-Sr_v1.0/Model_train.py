@@ -86,13 +86,13 @@ def main(parameters_list):
         start_time = time.time()
         loss = 1e9
         # 图像配置初始化
-        sns.set(font="Times New Roman")
-        fig = plt.figure()
-        ax = plt.gca()
-        ax.set_title('Learning rate: %.2e' % learning_rate)
-        ax.set_xlabel('Loops / K')
-        ax.set_ylabel('Loss value')
-        ax.set_ylim(lower_limit, upper_limit)
+        # sns.set(font="Times New Roman")
+        # fig = plt.figure()
+        # ax = plt.gca()
+        # ax.set_title('Learning rate: %.2e' % learning_rate)
+        # ax.set_xlabel('Loops / K')
+        # ax.set_ylabel('Loss value')
+        # ax.set_ylim(lower_limit, upper_limit)
         # 循环训练
         while loss > loss_threashold_value:
             loop += 1
@@ -107,9 +107,9 @@ def main(parameters_list):
                     print('Loop: %dK ---' % (loop / 1000),
                           'loss: %.6f' % loss.item())
                     # 可视化误差变化
-                    if loss.item() <= upper_limit:
-                        ax.scatter(loop / 1000, loss.item(), color='red', s=5)
-                        plt.pause(0.1)
+                    # if loss.item() <= upper_limit:
+                    #     ax.scatter(loop / 1000, loss.item(), color='red', s=5)
+                    #     plt.pause(0.1)
             else:
                 user_choice = input('Continue or not(Y/N)')
                 if (user_choice.lower() != 'y'):
@@ -161,8 +161,8 @@ def main(parameters_list):
             #            general_w.detach().numpy(), fmt='%.3f', delimiter=',')
             # np.savetxt(path + 'general_b.csv', general_b.detach().numpy(),
             #            fmt='%.3f', delimiter=',')
-            plt.savefig(path + 'learning_curve.png')
-            plt.show()
+            # plt.savefig(path + 'learning_curve.png')
+            # plt.show()
 
         return training_break
 

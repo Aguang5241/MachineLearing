@@ -130,17 +130,20 @@ def main(parameters_list):
                         linestyle='None', capsize=5, ecolor='green',
                         fmt='o:', mfc='wheat', mec='green',
                         label='Experimental Al${_2}$Si${_2}$Sr phase')
-            # ax.vlines(0.076, 0, 1)
             ax.legend(loc='upper right', frameon=False, ncol=2)
 
             plt.savefig(path + 'elements_%s.png' % types)
         else:
+            fig = plt.figure(figsize=(8, 6))
+            ax = plt.subplot()
+            ax.set_xlabel('Sr / wt. %')
             if item == 'Al / wt. %':
                 item_ = 'Phase fraction of Al phase / wt. %'
                 fig_name = 'Al'
                 index = 0
                 y_min = 0.4
                 y_max = 1
+                ax.vlines(0.077, 0, 1)
             elif item == 'Si / wt. %':
                 item_ = 'Phase fraction of Si phase / wt. %'
                 fig_name = 'Si'
@@ -153,9 +156,6 @@ def main(parameters_list):
                 index = 2
                 y_min = -0.1
                 y_max = 0.1
-            fig = plt.figure(figsize=(8, 6))
-            ax = plt.subplot()
-            ax.set_xlabel('Sr / wt. %')
             ax.set_ylabel(item_)
             ax.set_ylim(y_min, y_max)
             ax.scatter(x_predicting, y_predicting[:, index],

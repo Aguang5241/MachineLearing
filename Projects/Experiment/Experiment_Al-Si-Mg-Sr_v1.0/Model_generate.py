@@ -100,6 +100,10 @@ def main(parameters_list):
         matplotlib.rcParams['xtick.direction'] = 'in'
         matplotlib.rcParams['ytick.direction'] = 'in'
         if types == 'whole':
+            fig = plt.figure(figsize=(8, 6))
+            ax = plt.subplot()
+            ax.set_xlabel('Sr / wt. %')
+            ax.set_ylabel('Phase fraction / wt. %')
             # Predicted
             ax.scatter(
                 x_predicting, y_predicting[:, 0], s=15, color='cornflowerblue', label='Predicted Al phase')
