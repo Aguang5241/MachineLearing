@@ -113,7 +113,7 @@ def main(parameters_list):
     # 绘制散点图
 
     def draw_scatter(x_training, y_training, x_predicting, y_predicting, error, add):
-        ymin1 = 80
+        ymin1 = 75
         ymax1 = 270
         ymin2 = 0
         ymax2 = 30
@@ -161,8 +161,11 @@ def main(parameters_list):
                    linestyles='dotted', linewidth=2)
         ax1.vlines(0.077, ymin1, ymax1,
                    linestyles='dotted', linewidth=2)
+        # ax1.vlines(0.318, ymin1, ymax1,
+        #            linestyles='dotted', linewidth=2)
         ax1.text(0.01, 130, 'w(Sr) = 0.005', fontdict={'style': 'italic'})
         ax1.text(0.08, 130, 'w(Sr) = 0.077', fontdict={'style': 'italic'})
+        # ax1.text(0.32, 180, 'w(Sr) = 0.318', fontdict={'style': 'italic'})
 
         label11 = 'Predicted UTS'
         label12 = 'Experimental UTS'

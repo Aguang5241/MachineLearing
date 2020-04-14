@@ -22,8 +22,8 @@ import numpy as np
 def main():
 
     # Common
-    training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Data\\Training_data_process1.csv'
-    predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Regenerate\\0-10\\generate_results.csv'
+    training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Data\\Training_data_process3.csv'
+    predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Regenerate\\0-10-ok\\generate_results.csv'
     # training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Data\\Training_data.csv'
     # predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Data\\Predicting_data.csv'
     features = 3
@@ -52,8 +52,8 @@ def main():
 
         path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Generate\\%.3f\\' % index
         learning_rate = 1e-3
-        loss_threashold_value = 1e-7
-        train_end_index = 9
+        loss_threashold_value = 1.5e-8
+        train_end_index = 6
         parameters_list = [training_data_file_path, features, loop_max, EL_Sr_predict,
                            ANN_II_layer_1, Net, path, learning_rate, loss_threashold_value,
                            train_start_index, train_end_index]
@@ -72,9 +72,9 @@ def main():
         Net = Model_ANN_II.Net
 
         path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Regenerate\\%.3f\\' % index
-        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Regenerate\\0-10\\generate_model.pkl'
+        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Regenerate\\0-9-ok\\generate_model.pkl'
         learning_rate = 1e-4
-        loss_threashold_value = 1e-1
+        loss_threashold_value = 3e-9
         train_end_index = 10
         add = True
         error = np.array([[[0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03, 0.03],
@@ -103,7 +103,7 @@ def main():
 
         path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v1.0\\res\\Train\\%.3f\\' % index
         learning_rate = 1e-3
-        loss_threashold_value = 1e-2
+        loss_threashold_value = 1e-1
         train_end_index = 6
         error = e.repeat(train_end_index - train_start_index, 1)
         upper_limit = 3
