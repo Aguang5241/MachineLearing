@@ -325,7 +325,7 @@ def main(parameters_list):
         start2 = 0
         end2 = 251
         # Si
-        start3 = 0
+        start3 = 10
         end3 = 251
         # Al2Si2Sr
         start4 = 0
