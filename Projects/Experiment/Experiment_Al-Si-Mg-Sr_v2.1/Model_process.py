@@ -159,12 +159,12 @@ def main(parameters_list):
 
         ax1.vlines(0.005, ymin1, ymax1,
                    linestyles='dotted', linewidth=2)
-        # ax1.vlines(0.077, ymin1, ymax1,
-        #            linestyles='dotted', linewidth=2)
+        ax1.vlines(0.077, ymin1, ymax1,
+                   linestyles='dotted', linewidth=2)
         # ax1.vlines(0.318, ymin1, ymax1,
         #            linestyles='dotted', linewidth=2)
         ax1.text(0.01, 130, 'w(Sr) = 0.005', fontdict={'style': 'italic'})
-        # ax1.text(0.08, 130, 'w(Sr) = 0.077', fontdict={'style': 'italic'})
+        ax1.text(0.08, 130, 'w(Sr) = 0.077', fontdict={'style': 'italic'})
         # ax1.text(0.32, 180, 'w(Sr) = 0.318', fontdict={'style': 'italic'})
 
         label11 = 'Predicted UTS'
@@ -263,27 +263,6 @@ def main(parameters_list):
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
 
-        # if Al_line:
-        #     ax.vlines(0.87, -6, 2, linestyles='dotted', linewidth=2)
-        #     ax.vlines(-0.89, -6, 2, linestyles='dotted', linewidth=2)
-        #     ax.vlines(-1.37, -6, 2, linestyles='dotted', linewidth=2)
-        #     ax.text(0.3, -3, 'w(Sr) = 0.005',
-        #             fontdict={'style': 'italic'})
-        #     ax.text(-0.84, -4, 'w(Sr) = 0.06',
-        #             fontdict={'style': 'italic'})
-        #     ax.text(-1.32, -3, 'w(Sr) = 0.075',
-        #             fontdict={'style': 'italic'})
-        # if Al2Si2Sr_line:
-        #     ax.vlines(-0.8, -6, 4, linestyles='dotted', linewidth=2)
-        #     ax.vlines(0.35, -6, 4, linestyles='dotted', linewidth=2)
-        #     ax.vlines(0.67, -6, 4, linestyles='dotted', linewidth=2)
-        #     ax.text(-0.75, -3, 'w(Sr) = 0.005',
-        #             fontdict={'style': 'italic'})
-        #     ax.text(-0.3, -4, 'w(Sr) = 0.06',
-        #             fontdict={'style': 'italic'})
-        #     ax.text(0.72, -3, 'w(Sr) = 0.075',
-        #             fontdict={'style': 'italic'})
-
         # UTS
         pl11 = ax.scatter(x_testing_[:, x_index2], y_testing_[:, 0], s=15)
         fitting_w1, fitting_b1 = linear_fitting(x_testing_[x_index11:x_index12, x_index2],
@@ -335,132 +314,186 @@ def main(parameters_list):
         sns.set(font="Times New Roman", font_scale=1.3, style='ticks')
         matplotlib.rcParams['xtick.direction'] = 'in'
         matplotlib.rcParams['ytick.direction'] = 'in'
-        x_Al = np.linspace(-1.5, 1, 100)
+        x_Al = np.linspace(0, 1, 100)
+        x_Al2 = np.linspace(-1, -0.5, 100)
         x_Si = np.linspace(-1, 3, 100)
-        x_AlSi2Sr = np.linspace(-1, 2.2, 100)
+        x_AlSi2Sr = np.linspace(-1, 2, 100)
+        # Al
+        start1 = 0
+        end1 = 154
+        # Al2
+        start2 = 0
+        end2 = 251
+        # Si
+        start3 = 0
+        end3 = 251
+        # Al2Si2Sr
+        start4 = 0
+        end4 = 251
         # UTS
-        # fig1, ax1 = plt.subplots(2, 2, figsize=(16, 12))
-        fig = plt.figure(figsize=(24, 18))
-        ax1 = plt.subplot(331)
-        ax2 = plt.subplot(332)
-        ax3 = plt.subplot(333)
-        ax4 = plt.subplot(334)
-        ax5 = plt.subplot(335)
-        ax6 = plt.subplot(336)
-        ax7 = plt.subplot(337)
-        ax8 = plt.subplot(338)
-        ax9 = plt.subplot(339)
+        fig = plt.figure(figsize=(32, 18))
+        ax1 = plt.subplot(3, 4, 1)
+        ax2 = plt.subplot(3,4,2)
+        ax3 = plt.subplot(3,4,3)
+        ax4 = plt.subplot(3,4,4)
+        ax5 = plt.subplot(3,4,5)
+        ax6 = plt.subplot(3,4,6)
+        ax7 = plt.subplot(3,4,7)
+        ax8 = plt.subplot(3,4,8)
+        ax9 = plt.subplot(3,4,9)
+        ax10 = plt.subplot(3,4,10)
+        ax11 = plt.subplot(3,4,11)
+        ax12 = plt.subplot(3,4,12)
         ax1.set_ylim(-4, 5)
         ax2.set_ylim(-4, 5)
         ax3.set_ylim(-4, 5)
-        ax4.set_ylim(-2, 5)
+        ax4.set_ylim(-4, 5)
         ax5.set_ylim(-2, 5)
         ax6.set_ylim(-2, 5)
-        ax7.set_ylim(-8, 6)
-        ax8.set_ylim(-8, 6)
+        ax7.set_ylim(-2, 5)
+        ax8.set_ylim(-2, 5)
         ax9.set_ylim(-8, 6)
+        ax10.set_ylim(-8, 6)
+        ax11.set_ylim(-8, 6)
+        ax12.set_ylim(-8, 6)
         ax1.spines['left'].set_color('cornflowerblue')
         ax1.tick_params(axis='y', colors='cornflowerblue')
         ax2.spines['left'].set_color('cornflowerblue')
         ax2.tick_params(axis='y', colors='cornflowerblue')
         ax3.spines['left'].set_color('cornflowerblue')
         ax3.tick_params(axis='y', colors='cornflowerblue')
-        ax4.spines['left'].set_color('chocolate')
-        ax4.tick_params(axis='y', colors='chocolate')
+        ax4.spines['left'].set_color('cornflowerblue')
+        ax4.tick_params(axis='y', colors='cornflowerblue')
         ax5.spines['left'].set_color('chocolate')
         ax5.tick_params(axis='y', colors='chocolate')
         ax6.spines['left'].set_color('chocolate')
         ax6.tick_params(axis='y', colors='chocolate')
-        ax7.spines['left'].set_color('mediumseagreen')
-        ax7.tick_params(axis='y', colors='mediumseagreen')
-        ax8.spines['left'].set_color('mediumseagreen')
-        ax8.tick_params(axis='y', colors='mediumseagreen')
+        ax7.spines['left'].set_color('chocolate')
+        ax7.tick_params(axis='y', colors='chocolate')
+        ax8.spines['left'].set_color('chocolate')
+        ax8.tick_params(axis='y', colors='chocolate')
         ax9.spines['left'].set_color('mediumseagreen')
         ax9.tick_params(axis='y', colors='mediumseagreen')
+        ax10.spines['left'].set_color('mediumseagreen')
+        ax10.tick_params(axis='y', colors='mediumseagreen')
+        ax11.spines['left'].set_color('mediumseagreen')
+        ax11.tick_params(axis='y', colors='mediumseagreen')
+        ax12.spines['left'].set_color('mediumseagreen')
+        ax12.tick_params(axis='y', colors='mediumseagreen')
         # Al/UTS
         ax1.set_ylabel('UTS with regularization', color='cornflowerblue')
         ax1.scatter(x_testing_[:, 0], y_testing_[:, 0],
                     label='Predicted UTS', color='cornflowerblue')
-        fitting_w_1, fitting_b_1 = linear_fitting(x_testing_[0:154, 0],
-                                                  y_testing_[0:154, 0])
+        fitting_w_1, fitting_b_1 = linear_fitting(x_testing_[start1:end1, 0],
+                                                  y_testing_[start1:end1, 0])
         ax1.plot(x_Al, fitting_w_1 * x_Al + fitting_b_1, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_1, fitting_b_1))
         ax1.legend(loc='upper right', frameon=False)
-        # Si/UTS
+        # Al2/UTS
+        ax2.set_ylabel('UTS with regularization', color='cornflowerblue')
         ax2.scatter(x_testing_[:, 1], y_testing_[:, 0],
                     label='Predicted UTS', color='cornflowerblue')
-        fitting_w_2, fitting_b_2 = linear_fitting(x_testing_[6:154, 1],
-                                                  y_testing_[6:154, 0])
-        ax2.plot(x_Si, fitting_w_2 * x_Si + fitting_b_2, color='red',
+        fitting_w_2, fitting_b_2 = linear_fitting(x_testing_[start2:end2, 0],
+                                                  y_testing_[start2:end2, 0])
+        ax2.plot(x_Al2, fitting_w_2 * x_Al2 + fitting_b_2, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_2, fitting_b_2))
         ax2.legend(loc='upper right', frameon=False)
-        # AlSi2Sr/UTS
+        # Si/UTS
         ax3.scatter(x_testing_[:, 2], y_testing_[:, 0],
                     label='Predicted UTS', color='cornflowerblue')
-        fitting_w_3, fitting_b_3 = linear_fitting(x_testing_[0:154, 2],
-                                                  y_testing_[0:154, 0])
-        ax3.plot(x_AlSi2Sr, fitting_w_3 * x_AlSi2Sr + fitting_b_3, color='red',
+        fitting_w_3, fitting_b_3 = linear_fitting(x_testing_[start3:end3, 1],
+                                                  y_testing_[start3:end3, 0])
+        ax3.plot(x_Si, fitting_w_3 * x_Si + fitting_b_3, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_3, fitting_b_3))
         ax3.legend(loc='upper right', frameon=False)
-        # Al/YS
-        ax4.set_ylabel('YS with regularization', color='chocolate')
-        ax4.scatter(x_testing_[:, 0], y_testing_[:, 1],
-                    label='Predicted YS', color='chocolate')
-        fitting_w_4, fitting_b_4 = linear_fitting(x_testing_[0:154, 0],
-                                                  y_testing_[0:154, 1])
-        ax4.plot(x_Al, fitting_w_4 * x_Al + fitting_b_4, color='red',
+        # AlSi2Sr/UTS
+        ax4.scatter(x_testing_[:, 3], y_testing_[:, 0],
+                    label='Predicted UTS', color='cornflowerblue')
+        fitting_w_4, fitting_b_4 = linear_fitting(x_testing_[start4:end4, 2],
+                                                  y_testing_[start4:end4, 0])
+        ax4.plot(x_AlSi2Sr, fitting_w_4 * x_AlSi2Sr + fitting_b_4, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_4, fitting_b_4))
         ax4.legend(loc='upper right', frameon=False)
-        # Si/YS
-        ax5.scatter(x_testing_[:, 1], y_testing_[:, 1],
+        # Al/YS
+        ax5.set_ylabel('YS with regularization', color='chocolate')
+        ax5.scatter(x_testing_[:, 0], y_testing_[:, 1],
                     label='Predicted YS', color='chocolate')
-        fitting_w_5, fitting_b_5 = linear_fitting(x_testing_[6:154, 1],
-                                                  y_testing_[6:154, 1])
-        ax5.plot(x_Si, fitting_w_5 * x_Si + fitting_b_5, color='red',
+        fitting_w_5, fitting_b_5 = linear_fitting(x_testing_[start1:end1, 0],
+                                                  y_testing_[start1:end1, 1])
+        ax5.plot(x_Al, fitting_w_5 * x_Al + fitting_b_5, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_5, fitting_b_5))
         ax5.legend(loc='upper right', frameon=False)
-        # AlSi2Sr/YS
-        ax6.scatter(x_testing_[:, 2], y_testing_[:, 1],
+        # Al2/YS
+        ax6.set_ylabel('YS with regularization', color='chocolate')
+        ax6.scatter(x_testing_[:, 1], y_testing_[:, 1],
                     label='Predicted YS', color='chocolate')
-        fitting_w_6, fitting_b_6 = linear_fitting(x_testing_[0:154, 2],
-                                                  y_testing_[0:154, 1])
-        ax6.plot(x_AlSi2Sr, fitting_w_6 * x_AlSi2Sr + fitting_b_6, color='red',
+        fitting_w_6, fitting_b_6 = linear_fitting(x_testing_[start2:end2, 0],
+                                                  y_testing_[start2:end2, 1])
+        ax6.plot(x_Al2, fitting_w_6 * x_Al2 + fitting_b_6, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_6, fitting_b_6))
         ax6.legend(loc='upper right', frameon=False)
-        # Al/EL
-        ax7.set_xlabel('Phase fraction of Al phase with regularization')
-        ax7.set_ylabel('EL with regularization', color='mediumseagreen')
-        ax7.scatter(x_testing_[:, 0], y_testing_[:, 2],
-                    label='Predicted EL', color='mediumseagreen')
-        fitting_w_7, fitting_b_7 = linear_fitting(x_testing_[0:154, 0],
-                                                  y_testing_[0:154, 2])
-        ax7.plot(x_Al, fitting_w_7 * x_Al + fitting_b_7, color='red',
+        # Si/YS
+        ax7.scatter(x_testing_[:, 2], y_testing_[:, 1],
+                    label='Predicted YS', color='chocolate')
+        fitting_w_7, fitting_b_7 = linear_fitting(x_testing_[start3:end3, 1],
+                                                  y_testing_[start3:end3, 1])
+        ax7.plot(x_Si, fitting_w_7 * x_Si + fitting_b_7, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_7, fitting_b_7))
         ax7.legend(loc='upper right', frameon=False)
-        # Si/EL
-        ax8.set_xlabel('Phase fraction of Si phase with regularization')
-        ax8.scatter(x_testing_[:, 1], y_testing_[:, 2],
-                    label='Predicted EL', color='mediumseagreen')
-        fitting_w_8, fitting_b_8 = linear_fitting(x_testing_[6:154, 1],
-                                                  y_testing_[6:154, 2])
-        ax8.plot(x_Si, fitting_w_8 * x_Si + fitting_b_8, color='red',
+        # AlSi2Sr/YS
+        ax8.scatter(x_testing_[:, 3], y_testing_[:, 1],
+                    label='Predicted YS', color='chocolate')
+        fitting_w_8, fitting_b_8 = linear_fitting(x_testing_[start4:end4, 2],
+                                                  y_testing_[start4:end4, 1])
+        ax8.plot(x_AlSi2Sr, fitting_w_8 * x_AlSi2Sr + fitting_b_8, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_8, fitting_b_8))
         ax8.legend(loc='upper right', frameon=False)
-        # AlSi2Sr/EL
+        # Al/EL
         ax9.set_xlabel(
-            'Phase fraction of Al${_2}$Si${_2}$Sr phase with regularization')
-        ax9.scatter(x_testing_[:, 2], y_testing_[:, 2],
+            r'Phase fraction of $\alpha$-(Al) phase with regularization')
+        ax9.set_ylabel('EL with regularization', color='mediumseagreen')
+        ax9.scatter(x_testing_[:, 0], y_testing_[:, 2],
                     label='Predicted EL', color='mediumseagreen')
-        fitting_w_9, fitting_b_9 = linear_fitting(x_testing_[0:154, 2],
-                                                  y_testing_[0:154, 2])
-        ax9.plot(x_AlSi2Sr, fitting_w_9 * x_AlSi2Sr + fitting_b_9, color='red',
+        fitting_w_9, fitting_b_9 = linear_fitting(x_testing_[start1:end1, 0],
+                                                  y_testing_[start1:end1, 2])
+        ax9.plot(x_Al, fitting_w_9 * x_Al + fitting_b_9, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_9, fitting_b_9))
         ax9.legend(loc='upper right', frameon=False)
+        # Al2/EL
+        ax10.set_xlabel(
+            'Phase fraction of eutectic (Al) phase with regularization')
+        ax10.set_ylabel('EL with regularization', color='mediumseagreen')
+        ax10.scatter(x_testing_[:, 1], y_testing_[:, 2],
+                     label='Predicted EL', color='mediumseagreen')
+        fitting_w_10, fitting_b_10 = linear_fitting(x_testing_[start2:end2, 0],
+                                                    y_testing_[start2:end2, 2])
+        ax10.plot(x_Al2, fitting_w_10 * x_Al2 + fitting_b_10, color='red',
+                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_10, fitting_b_10))
+        ax10.legend(loc='upper right', frameon=False)
+        # Si/EL
+        ax11.set_xlabel('Phase fraction of Si phase with regularization')
+        ax11.scatter(x_testing_[:, 2], y_testing_[:, 2],
+                     label='Predicted EL', color='mediumseagreen')
+        fitting_w_11, fitting_b_11 = linear_fitting(x_testing_[start3:end3, 1],
+                                                    y_testing_[start3:end3, 2])
+        ax11.plot(x_Si, fitting_w_11 * x_Si + fitting_b_11, color='red',
+                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_11, fitting_b_11))
+        ax11.legend(loc='upper right', frameon=False)
+        # AlSi2Sr/EL
+        ax12.set_xlabel(
+            'Phase fraction of Al${_2}$Si${_2}$Sr phase with regularization')
+        ax12.scatter(x_testing_[:, 3], y_testing_[:, 2],
+                     label='Predicted EL', color='mediumseagreen')
+        fitting_w_12, fitting_b_12 = linear_fitting(x_testing_[start4:end4, 2],
+                                                    y_testing_[start4:end4, 2])
+        ax12.plot(x_AlSi2Sr, fitting_w_12 * x_AlSi2Sr + fitting_b_12, color='red',
+                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_12, fitting_b_12))
+        ax12.legend(loc='upper right', frameon=False)
         plt.savefig(path + 'phase_allRE.png', bbox_inches='tight')
-        linear_coef_allRE = pd.DataFrame(data=np.ones((9, 2)),
-                                         index=['UTS_Al', 'UTS_Si', 'UTS_AlSi2Sr',
-                                                'YS_Al', 'YS_Si', 'YS_AlSi2Sr',
-                                                'EL_Al', 'EL_Si', 'EL_AlSi2Sr'],
+        linear_coef_allRE = pd.DataFrame(data=np.ones((12, 2)),
+                                         index=['UTS_Al', 'UTS_Al2', 'UTS_Si', 'UTS_AlSi2Sr',
+                                                'YS_Al', 'YS_Al2', 'YS_Si', 'YS_AlSi2Sr',
+                                                'EL_Al', 'EL_Al2', 'EL_Si', 'EL_AlSi2Sr'],
                                          columns=['weight', 'bias'])
         # UTS
         linear_coef_allRE.iloc[0, 0] = fitting_w_1
@@ -469,20 +502,27 @@ def main(parameters_list):
         linear_coef_allRE.iloc[1, 1] = fitting_b_2
         linear_coef_allRE.iloc[2, 0] = fitting_w_3
         linear_coef_allRE.iloc[2, 1] = fitting_b_3
-        # YS
         linear_coef_allRE.iloc[3, 0] = fitting_w_4
         linear_coef_allRE.iloc[3, 1] = fitting_b_4
+        # YS
         linear_coef_allRE.iloc[4, 0] = fitting_w_5
         linear_coef_allRE.iloc[4, 1] = fitting_b_5
         linear_coef_allRE.iloc[5, 0] = fitting_w_6
         linear_coef_allRE.iloc[5, 1] = fitting_b_6
-        # EL
         linear_coef_allRE.iloc[6, 0] = fitting_w_7
         linear_coef_allRE.iloc[6, 1] = fitting_b_7
         linear_coef_allRE.iloc[7, 0] = fitting_w_8
         linear_coef_allRE.iloc[7, 1] = fitting_b_8
+        # EL
         linear_coef_allRE.iloc[8, 0] = fitting_w_9
         linear_coef_allRE.iloc[8, 1] = fitting_b_9
+        linear_coef_allRE.iloc[9, 0] = fitting_w_10
+        linear_coef_allRE.iloc[9, 1] = fitting_b_10
+        linear_coef_allRE.iloc[10, 0] = fitting_w_11
+        linear_coef_allRE.iloc[10, 1] = fitting_b_11
+        linear_coef_allRE.iloc[11, 0] = fitting_w_12
+        linear_coef_allRE.iloc[11, 1] = fitting_b_12
+        
         linear_coef_allRE.to_csv(
             path + 'linear_coef_allRE.csv', float_format='%.2f')
         # plt.show()
@@ -504,8 +544,10 @@ def main(parameters_list):
         x_scaler.transform(x_testing)).float()
     x_standarded_predict = torch.from_numpy(
         x_scaler.transform(x_predicting)).float()
+    # xRe = pd.DataFrame(data=x_standarded_predict.numpy(),
+    #                    columns=['Al', 'Si', 'Al2Si2Sr'])
     xRe = pd.DataFrame(data=x_standarded_predict.numpy(),
-                       columns=['Al', 'Si', 'Al2Si2Sr'])
+                       columns=['Al', 'Al2', 'Si', 'Al2Si2Sr'])
     xRe.to_csv(path + 'xRe.csv', float_format='%.2f')
 
     # 调用模型进行预测

@@ -21,13 +21,10 @@ def main(parameters_list):
     ANN_II_layer_1 = parameters_list[4]
     Net = parameters_list[5]
     path = parameters_list[6]
-    old_model_path = parameters_list[7]
-    learning_rate = parameters_list[8]
-    loss_threashold_value = parameters_list[9]
-    train_start_index = parameters_list[10]
-    train_end_index = parameters_list[11]
-    error = parameters_list[12]
-    add = parameters_list[13]
+    learning_rate = parameters_list[7]
+    loss_threashold_value = parameters_list[8]
+    train_start_index = parameters_list[9]
+    train_end_index = parameters_list[10]
 
     # 获取训练数据
 
@@ -41,13 +38,10 @@ def main(parameters_list):
 
     # 定义训练函数
 
-    def train(x, y, old_model_path):
+    def train(x, y):
         # 实例化神经网络
         net = Net(n_feature=1, n_hidden=ANN_II_layer_1,
                   n_output=features)
-        # 加载模型
-        old_model_dict = torch.load(old_model_path).state_dict()
-        net.load_state_dict(old_model_dict)
         # Adam优化器
         optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
         # 损失函数
@@ -96,122 +90,77 @@ def main(parameters_list):
         results = torch.cat((predict_y, x), 1)
         pd.DataFrame(results.numpy()).to_csv(
             path + 'generate_results.csv',
-            header=['PH_Al', 'PH_Si', 'PH_AlSi2Sr', 'EL_Sr'])
+            header=['PH_Al', 'PH_Al_2', 'PH_Si', 'PH_AlSi2Sr', 'EL_Sr'])
         return predict_y
 
     # 绘制散点图
 
-    def draw_scatter(x_training, y_training, x_predicting, y_predicting, types, error, add, item=None):
+    def draw_scatter(x_training, y_training, x_predicting, y_predicting,  types, item=None):
         sns.set(font="Times New Roman", font_scale=1.3, style='ticks')
         matplotlib.rcParams['xtick.direction'] = 'in'
         matplotlib.rcParams['ytick.direction'] = 'in'
-
-        if add:
-            y_index = -1
-        else:
-            y_index = train_end_index
-
         if types == 'whole':
             fig = plt.figure(figsize=(8, 6))
-            ax = brokenaxes.brokenaxes(
-                ylims=((-3, 9), (80, 110)), hspace=0.05, despine=False)
+            ax = plt.subplot()
             ax.set_xlabel('Sr / wt. %')
             ax.set_ylabel('Phase fraction / wt. %')
             # Predicted
-            ax.scatter(x_predicting, y_predicting[:, 0] * 100,
+            ax.scatter(x_predicting, y_predicting[:, 0],
                        s=15, color='cornflowerblue',
-                       label='Predicted Al phase')
-            ax.scatter(x_predicting, y_predicting[:, 1] * 100,
+                       label=r'Predicted $\alpha$-(Al) phase')
+            ax.scatter(x_predicting, y_predicting[:, 1],
                        s=15, color='chocolate',
-                       label='Predicted Si phase')
-            ax.scatter(x_predicting, y_predicting[:, 2] * 100,
+                       label='Predicted eutectic (Al) phase')
+            ax.scatter(x_predicting, y_predicting[:, 2],
                        s=15, color='mediumseagreen',
+                       label='Predicted Si phase')
+            ax.scatter(x_predicting, y_predicting[:, 3],
+                       s=15, color='violet',
                        label='Predicted Al${_2}$Si${_2}$Sr phase')
-            # Additional label
-            if add:
-                # Al2Si2Sr
-                x_add3 = np.array([x_training[y_index]])
-                y_add3 = np.array([y_training[y_index, 2] * 100])
-                e_add3 = np.array([[0.01],
-                                   [0.01]])
-                ax.errorbar(x_add3, y_add3, yerr=e_add3,
-                            linestyle='None', capsize=5, ecolor='r',
-                            fmt='*', mfc='white', mec='r',
-                            label='Additional experiment', ms=10)
             # Training
-            ax.errorbar(x_training[0:y_index], y_training[0:y_index, 0] * 100, yerr=error[0],
-                        linestyle='None', capsize=5, ecolor='royalblue',
-                        fmt='o:', mfc='wheat', mec='royalblue',
-                        label='Experimental Al phase')
-            ax.errorbar(x_training[0:y_index], y_training[0:y_index, 1] * 100, yerr=error[1],
-                        linestyle='None', capsize=5, ecolor='saddlebrown',
-                        fmt='o:', mfc='wheat', mec='saddlebrown',
-                        label='Experimental Si phase')
-            ax.errorbar(x_training[0:y_index], y_training[0:y_index, 2] * 100, yerr=error[2],
-                        linestyle='None', capsize=5, ecolor='green',
-                        fmt='o:', mfc='wheat', mec='green',
-                        label='Experimental Al${_2}$Si${_2}$Sr phase')
-            # Additional
-            if add:
-                # Al
-                x_add1 = np.array([x_training[y_index]])
-                y_add1 = np.array([y_training[y_index, 0] * 100])
-                e_add1 = np.array([[3],
-                                   [3]])
-                ax.errorbar(x_add1, y_add1, yerr=e_add1,
-                            linestyle='None', capsize=5, ecolor='r',
-                            fmt='*', mfc='white', mec='r', ms=10)
-                # Si
-                x_add2 = np.array([x_training[y_index]])
-                y_add2 = np.array([y_training[y_index, 1] * 100])
-                e_add2 = np.array([[2],
-                                   [2]])
-                ax.errorbar(x_add2, y_add2, yerr=e_add2,
-                            linestyle='None', capsize=5, ecolor='r',
-                            fmt='*', mfc='white', mec='r', ms=10)
-                # Al2Si2Sr
-                x_add3 = np.array([x_training[y_index]])
-                y_add3 = np.array([y_training[y_index, 2] * 100])
-                e_add3 = np.array([[1],
-                                   [1]])
-                ax.errorbar(x_add3, y_add3, yerr=e_add3,
-                            linestyle='None', capsize=5, ecolor='r',
-                            fmt='*', mfc='white', mec='r', ms=10)
+            ax.scatter(x_training, y_training[:, 0],
+                       s=50, color='royalblue',
+                       label=r'Experimental $\alpha$-(Al) phase')
+            ax.scatter(x_training, y_training[:, 1],
+                       s=50, color='saddlebrown',
+                       label='Experimental eutectic (Al) phase')
+            ax.scatter(x_training, y_training[:, 2],
+                       s=50, color='green',
+                       label='Experimental Si phase')
+            ax.scatter(x_training, y_training[:, 3],
+                       s=50, color='magenta',
+                       label='Experimental Al${_2}$Si${_2}$Sr phase')
+
             ax.legend(loc='upper right', frameon=False, ncol=2)
+
             plt.savefig(path + 'elements_%s.png' % types)
         else:
             fig = plt.figure(figsize=(8, 6))
             ax = plt.subplot()
-            ax.set_xlabel('Sr / wt. %')
-            if item == 'Al / wt. %':
+            if item == 'Al':
                 item_ = 'Phase fraction of Al phase / wt. %'
                 fig_name = 'Al'
                 index = 0
-                y_min = 0.8
-                y_max = 1
                 ax.vlines(0.077, 0, 1)
-            elif item == 'Si / wt. %':
+            elif item == 'Al2':
+                item_ = 'Phase fraction of Al2 phase / wt. %'
+                fig_name = 'Al2'
+                index = 1
+                ax.vlines(0.077, 0, 1)
+            elif item == 'Si':
                 item_ = 'Phase fraction of Si phase / wt. %'
                 fig_name = 'Si'
-                index = 1
-                y_min = 0
-                y_max = 0.1
+                index = 2
             else:
                 item_ = 'Phase fraction of Al${_2}$Si${_2}$Sr phase/ wt. %'
                 fig_name = 'AlSi2Sr'
-                index = 2
-                y_min = -0.1
-                y_max = 0.1
+                index = 3
+            ax.set_xlabel('Sr / wt. %')
             ax.set_ylabel(item_)
-            ax.set_ylim(y_min, y_max)
-            ax.scatter(x_predicting, y_predicting[:, index],
-                       label='Predicted data')
-            # ax.errorbar(x_training, y_training[:, index], yerr=error[index],
-            #             linestyle='None', capsize=5, ecolor='saddlebrown',
-            #             fmt='o:', mfc='wheat', mec='saddlebrown',
-            #             label='Experimental Si phase')
-            ax.scatter(x_training, y_training[:, index],
-                       s=50, label='Experimental data')
+            ax.scatter(
+                x_predicting, y_predicting[:, index], label='Predicted data')
+            ax.scatter(
+                x_training, y_training[:, index], s=50, label='Experimental data')
             ax.legend(loc='upper right', frameon=False)
             plt.savefig(path + 'elements_%s.png' % fig_name)
         plt.show()
@@ -229,7 +178,7 @@ def main(parameters_list):
 
     # 执行模型训练
 
-    training_break = train(x_standarded, y, old_model_path)
+    training_break = train(x_standarded, y)
 
     # 调用训练好的模型进行评估与预测
 
@@ -248,13 +197,15 @@ def main(parameters_list):
                 # 数据可视化(散点图)
 
                 draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
-                             y_predicting.numpy(), 'part', error, add, item='Al / wt. %',)
+                             y_predicting.numpy(), 'part', item='Al')
                 draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
-                             y_predicting.numpy(), 'part', error, add, item='Si / wt. %', )
+                             y_predicting.numpy(), 'part', item='Al2')
                 draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
-                             y_predicting.numpy(), 'part', error, add, item='AlSi2Sr / wt. %', )
+                             y_predicting.numpy(), 'part', item='Si')
                 draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
-                             y_predicting.numpy(), 'whole', error, add)
+                             y_predicting.numpy(), 'part', item='AlSi2Sr')
+                draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
+                             y_predicting.numpy(), 'whole')
 
     return training_break
 
