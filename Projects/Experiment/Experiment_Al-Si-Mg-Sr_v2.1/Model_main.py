@@ -23,7 +23,7 @@ def main():
 
     # Common
     training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Data\\Training_data_CT.csv'
-    predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Regenerate\\10data-CT2\\generate_results.csv'
+    predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Regenerate\\11data-CT\\generate_results.csv'
     features = 4
     index = np.random.randn(1)
     loop_max = 1e5
@@ -50,7 +50,7 @@ def main():
 
         path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Generate\\%.3f\\' % index
         learning_rate = 1e-3
-        loss_threashold_value = 1e-9
+        loss_threashold_value = 1e-7
         train_end_index = 6
         parameters_list = [training_data_file_path, features, loop_max, EL_Sr_predict,
                            ANN_II_layer_1, Net, path, learning_rate, loss_threashold_value,
@@ -70,9 +70,9 @@ def main():
         Net = Model_ANN_II.Net
 
         path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Regenerate\\%.3f\\' % index
-        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Regenerate\\10data-CT1\\generate_model.pkl'
+        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Regenerate\\9data-CT\\generate_model.pkl'
         learning_rate = 1e-3
-        loss_threashold_value = 1.5e-9
+        loss_threashold_value = 5e-7
         train_end_index = 10
         add = True
         error = np.array([[[3, 3, 3, 3, 3, 3, 3, 3, 3],
@@ -127,10 +127,10 @@ def main():
         Net = Model_ANN_I.Net
 
         path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Retrain\\%.3f\\' % index
-        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Train\\6data-CT\\model.pkl'
+        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Retrain\\9data-CT\\model.pkl'
         learning_rate = 1e-3
-        loss_threashold_value = 1e-2
-        train_end_index = 9
+        loss_threashold_value = 1e-1
+        train_end_index = 10
         error = e.repeat(train_end_index - train_start_index, 1)
         upper_limit = 3
         lower_limit = -(upper_limit / 8) * 2
@@ -153,9 +153,9 @@ def main():
         Net = Model_ANN_I.Net
 
         path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Process\\%.3f\\' % index
-        model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Retrain\\9data-CT\\model.pkl'
-        train_end_index = 9
-        add = False
+        model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Retrain\\10data-CT\\model.pkl'
+        train_end_index = 10
+        add = True
         error = np.array([[[3, 3, 3, 3, 3, 3, 3, 3, 3],
                            [3, 3, 3, 3, 3, 3, 3, 3, 3]],
                           [[3, 3, 3, 3, 3, 3, 3, 3, 3],

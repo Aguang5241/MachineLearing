@@ -68,7 +68,7 @@ def main(parameters_list):
             if (loop <= loop_max + loop_added):
                 if (loop % 1000 == 0):
                     print('Loop: %dK ---' % (loop / 1000),
-                          'loss: %.9f' % loss.item())
+                          'loss: %.12f' % loss.item())
             else:
                 user_choice = input('Continue or not(Y/N)')
                 if (user_choice.lower() != 'y'):
@@ -113,8 +113,10 @@ def main(parameters_list):
 
         if types == 'whole':
             fig = plt.figure(figsize=(8, 6))
-            ax = brokenaxes.brokenaxes(
-                ylims=((-3, 9), (35, 75)), hspace=0.05, despine=False)
+            # ax = brokenaxes.brokenaxes(
+                # ylims=((-3, 9), (35, 75)), hspace=0.05, despine=False)
+            ax = plt.subplot()
+            ax.set_ylim(-3, 90)
             ax.set_xlabel('Sr / wt. %')
             ax.set_ylabel('Phase fraction / %')
             # Predicted
@@ -209,7 +211,7 @@ def main(parameters_list):
                 item_ = 'Phase fraction of Al2 phase / wt. %'
                 fig_name = 'Al2'
                 index = 1
-                y_min = 0.35
+                y_min = 0
                 y_max = 0.55
                 ax.vlines(0.077, 0, 1)
             elif item == 'Si':
