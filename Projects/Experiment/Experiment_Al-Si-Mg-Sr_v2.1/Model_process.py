@@ -36,19 +36,6 @@ def main(parameters_list):
             (torch.from_numpy(data['EL_Sr'].values)), dim=1).float()
         return x, EL_Sr
 
-    # 定义获取测试数据函数
-
-    def get_testing_data(file_path):
-        data = pd.read_csv(file_path)
-        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSi2Sr'].values).float()
-        y_UTS = torch.unsqueeze(
-            (torch.from_numpy(data['UTS'].values)), dim=1).float()
-        y_YS = torch.unsqueeze(
-            (torch.from_numpy(data['YS'].values)), dim=1).float()
-        y_EL = torch.unsqueeze(
-            (torch.from_numpy(data['EL'].values)), dim=1).float()
-        return x, y_UTS, y_YS, y_EL
-
     # 定义获取训练数据函数
 
     def get_training_data(file_path):
@@ -110,9 +97,24 @@ def main(parameters_list):
         plt.savefig(path + 'general_Performance.png')
         # plt.show()
 
+    # R value
+
+    def correlation_coefficient(real, predict):
+        real_mean = real.mean()
+        predict_mean = predict.mean()
+        SSR = 0
+        r = 0
+        p = 0
+        for i in range(len(real)):
+            SSR += (real[i] - real_mean) * (predict[i] - predict_mean)
+            r += (real[i] - real_mean) ** 2
+            p += (predict[i] - predict_mean) ** 2
+        SST = np.sqrt(r * p)
+        return SSR / SST
+
     # 绘制散点图
 
-    def draw_scatter(x_training, y_training, x_predicting, y_predicting, error, add):
+    def draw_scatter(x_training, y_training, x_predict, y_predict, error, add, R_value):
         ymin1 = 75
         ymax1 = 270
         ymin2 = 0
@@ -139,19 +141,19 @@ def main(parameters_list):
         ax2.set_ylim(ymin2, ymax2)
 
         # UTS
-        pl11 = ax1.scatter(x_predicting, y_predicting[:, 0],
+        pl11 = ax1.scatter(x_predict, y_predict[:, 0],
                            s=15, color='cornflowerblue')
         pl12 = ax1.errorbar(x_training[0:y_index], y_training[0:y_index, 0], yerr=error[0],
                             linestyle='None', capsize=5, ecolor='royalblue',
                             fmt='o:', mfc='wheat', mec='royalblue', ms=5)
         # YS
-        pl21 = ax1.scatter(x_predicting, y_predicting[:, 1],
+        pl21 = ax1.scatter(x_predict, y_predict[:, 1],
                            s=15, color='mediumseagreen')
         pl22 = ax1.errorbar(x_training[0:y_index], y_training[0:y_index, 1], yerr=error[1],
                             linestyle='None', capsize=5, ecolor='green',
                             fmt='o:', mfc='wheat', mec='green', ms=5)
         # EL
-        pl31 = ax2.scatter(x_predicting, y_predicting[:, 2],
+        pl31 = ax2.scatter(x_predict, y_predict[:, 2],
                            s=15, color='chocolate')
         pl32 = ax2.errorbar(x_training[0:y_index], y_training[0:y_index, 2], yerr=error[2],
                             linestyle='None', capsize=5, ecolor='saddlebrown',
@@ -166,6 +168,9 @@ def main(parameters_list):
         ax1.text(0.01, 130, 'w(Sr) = 0.005', fontdict={'style': 'italic'})
         ax1.text(0.08, 130, 'w(Sr) = 0.077', fontdict={'style': 'italic'})
         # ax1.text(0.32, 180, 'w(Sr) = 0.318', fontdict={'style': 'italic'})
+
+        ax1.set_title('R = %.6f' % R_value, y=1.015, x=0.8,
+                      fontdict={'style': 'oblique', 'color': 'r'})
 
         label11 = 'Predicted UTS'
         label12 = 'Experimental UTS'
@@ -222,7 +227,7 @@ def main(parameters_list):
 
     # 绘制相分数(归一化)-性能(归一化)关系图
 
-    def draw_relation_allRE(x_training_, y_training_, x_testing_, y_testing_, item):
+    def draw_relation_allRE(x_predict, y_predict, item):
         sns.set(font="Times New Roman", font_scale=1.3, style='ticks')
         matplotlib.rcParams['xtick.direction'] = 'in'
         matplotlib.rcParams['ytick.direction'] = 'in'
@@ -264,21 +269,21 @@ def main(parameters_list):
         ax.set_ylabel(ylabel)
 
         # UTS
-        pl11 = ax.scatter(x_testing_[:, x_index2], y_testing_[:, 0], s=15)
-        fitting_w1, fitting_b1 = linear_fitting(x_testing_[x_index11:x_index12, x_index2],
-                                                y_testing_[x_index11:x_index12, 0])
+        pl11 = ax.scatter(x_predict[:, x_index2], y_predict[:, 0], s=15)
+        fitting_w1, fitting_b1 = linear_fitting(x_predict[x_index11:x_index12, x_index2],
+                                                y_predict[x_index11:x_index12, 0])
         pl12, = ax.plot(x_phase, fitting_w1 * x_phase +
                         fitting_b1, linestyle='dashed', linewidth=2)
         # YS
-        pl21 = ax.scatter(x_testing_[:, x_index2], y_testing_[:, 1], s=15)
-        fitting_w2, fitting_b2 = linear_fitting(x_testing_[x_index11:x_index12, x_index2],
-                                                y_testing_[x_index11:x_index12, 1])
+        pl21 = ax.scatter(x_predict[:, x_index2], y_predict[:, 1], s=15)
+        fitting_w2, fitting_b2 = linear_fitting(x_predict[x_index11:x_index12, x_index2],
+                                                y_predict[x_index11:x_index12, 1])
         pl22, = ax.plot(x_phase, fitting_w2 * x_phase +
                         fitting_b2, linestyle='dashed', linewidth=2)
         # EL
-        pl31 = ax.scatter(x_testing_[:, x_index2], y_testing_[:, 2], s=15)
-        fitting_w3, fitting_b3 = linear_fitting(x_testing_[x_index11:x_index12, x_index2],
-                                                y_testing_[x_index11:x_index12, 2])
+        pl31 = ax.scatter(x_predict[:, x_index2], y_predict[:, 2], s=15)
+        fitting_w3, fitting_b3 = linear_fitting(x_predict[x_index11:x_index12, x_index2],
+                                                y_predict[x_index11:x_index12, 2])
         pl32, = ax.plot(x_phase, fitting_w3 * x_phase +
                         fitting_b3, linestyle='dashed', linewidth=2)
 
@@ -310,7 +315,7 @@ def main(parameters_list):
             path + '%s_linear_coef_allRE.csv' % item, float_format='%.2f')
         # plt.show()
 
-    def draw_relation_allRE_whole(x_training_, y_training_, x_testing_, y_testing_):
+    def draw_relation_allRE_whole(x_predict, y_predict):
         sns.set(font="Times New Roman", font_scale=1.3, style='ticks')
         matplotlib.rcParams['xtick.direction'] = 'in'
         matplotlib.rcParams['ytick.direction'] = 'in'
@@ -333,17 +338,17 @@ def main(parameters_list):
         # UTS
         fig = plt.figure(figsize=(32, 18))
         ax1 = plt.subplot(3, 4, 1)
-        ax2 = plt.subplot(3,4,2)
-        ax3 = plt.subplot(3,4,3)
-        ax4 = plt.subplot(3,4,4)
-        ax5 = plt.subplot(3,4,5)
-        ax6 = plt.subplot(3,4,6)
-        ax7 = plt.subplot(3,4,7)
-        ax8 = plt.subplot(3,4,8)
-        ax9 = plt.subplot(3,4,9)
-        ax10 = plt.subplot(3,4,10)
-        ax11 = plt.subplot(3,4,11)
-        ax12 = plt.subplot(3,4,12)
+        ax2 = plt.subplot(3, 4, 2)
+        ax3 = plt.subplot(3, 4, 3)
+        ax4 = plt.subplot(3, 4, 4)
+        ax5 = plt.subplot(3, 4, 5)
+        ax6 = plt.subplot(3, 4, 6)
+        ax7 = plt.subplot(3, 4, 7)
+        ax8 = plt.subplot(3, 4, 8)
+        ax9 = plt.subplot(3, 4, 9)
+        ax10 = plt.subplot(3, 4, 10)
+        ax11 = plt.subplot(3, 4, 11)
+        ax12 = plt.subplot(3, 4, 12)
         ax1.set_ylim(-3, 5)
         ax2.set_ylim(-3, 5)
         ax3.set_ylim(-3, 5)
@@ -382,69 +387,69 @@ def main(parameters_list):
         ax12.tick_params(axis='y', colors='mediumseagreen')
         # Al/UTS
         ax1.set_ylabel('UTS with regularization', color='cornflowerblue')
-        ax1.scatter(x_testing_[start1:end1, 0], y_testing_[start1:end1, 0],
+        ax1.scatter(x_predict[start1:end1, 0], y_predict[start1:end1, 0],
                     label='Predicted UTS', color='cornflowerblue')
-        fitting_w_1, fitting_b_1 = linear_fitting(x_testing_[start1:end1, 0],
-                                                  y_testing_[start1:end1, 0])
+        fitting_w_1, fitting_b_1 = linear_fitting(x_predict[start1:end1, 0],
+                                                  y_predict[start1:end1, 0])
         ax1.plot(x_Al, fitting_w_1 * x_Al + fitting_b_1, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_1, fitting_b_1))
         ax1.legend(loc='upper right', frameon=False)
         # Al2/UTS
         ax2.set_ylabel('UTS with regularization', color='cornflowerblue')
-        ax2.scatter(x_testing_[start2:end2, 1], y_testing_[start2:end2, 0],
+        ax2.scatter(x_predict[start2:end2, 1], y_predict[start2:end2, 0],
                     label='Predicted UTS', color='cornflowerblue')
-        fitting_w_2, fitting_b_2 = linear_fitting(x_testing_[start2:end2, 1],
-                                                  y_testing_[start2:end2, 0])
+        fitting_w_2, fitting_b_2 = linear_fitting(x_predict[start2:end2, 1],
+                                                  y_predict[start2:end2, 0])
         ax2.plot(x_Al2, fitting_w_2 * x_Al2 + fitting_b_2, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_2, fitting_b_2))
         ax2.legend(loc='upper right', frameon=False)
         # Si/UTS
-        ax3.scatter(x_testing_[start3:end3, 2], y_testing_[start3:end3, 0],
+        ax3.scatter(x_predict[start3:end3, 2], y_predict[start3:end3, 0],
                     label='Predicted UTS', color='cornflowerblue')
-        fitting_w_3, fitting_b_3 = linear_fitting(x_testing_[start3:end3, 2],
-                                                  y_testing_[start3:end3, 0])
+        fitting_w_3, fitting_b_3 = linear_fitting(x_predict[start3:end3, 2],
+                                                  y_predict[start3:end3, 0])
         ax3.plot(x_Si, fitting_w_3 * x_Si + fitting_b_3, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_3, fitting_b_3))
         ax3.legend(loc='upper right', frameon=False)
         # AlSi2Sr/UTS
-        ax4.scatter(x_testing_[start4:end4, 3], y_testing_[start4:end4, 0],
+        ax4.scatter(x_predict[start4:end4, 3], y_predict[start4:end4, 0],
                     label='Predicted UTS', color='cornflowerblue')
-        fitting_w_4, fitting_b_4 = linear_fitting(x_testing_[start4:end4, 3],
-                                                  y_testing_[start4:end4, 0])
+        fitting_w_4, fitting_b_4 = linear_fitting(x_predict[start4:end4, 3],
+                                                  y_predict[start4:end4, 0])
         ax4.plot(x_AlSi2Sr, fitting_w_4 * x_AlSi2Sr + fitting_b_4, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_4, fitting_b_4))
         ax4.legend(loc='upper right', frameon=False)
         # Al/YS
         ax5.set_ylabel('YS with regularization', color='chocolate')
-        ax5.scatter(x_testing_[start1:end1, 0], y_testing_[start1:end1, 1],
+        ax5.scatter(x_predict[start1:end1, 0], y_predict[start1:end1, 1],
                     label='Predicted YS', color='chocolate')
-        fitting_w_5, fitting_b_5 = linear_fitting(x_testing_[start1:end1, 0],
-                                                  y_testing_[start1:end1, 1])
+        fitting_w_5, fitting_b_5 = linear_fitting(x_predict[start1:end1, 0],
+                                                  y_predict[start1:end1, 1])
         ax5.plot(x_Al, fitting_w_5 * x_Al + fitting_b_5, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_5, fitting_b_5))
         ax5.legend(loc='upper right', frameon=False)
         # Al2/YS
         ax6.set_ylabel('YS with regularization', color='chocolate')
-        ax6.scatter(x_testing_[start2:end2, 1], y_testing_[start2:end2, 1],
+        ax6.scatter(x_predict[start2:end2, 1], y_predict[start2:end2, 1],
                     label='Predicted YS', color='chocolate')
-        fitting_w_6, fitting_b_6 = linear_fitting(x_testing_[start2:end2, 1],
-                                                  y_testing_[start2:end2, 1])
+        fitting_w_6, fitting_b_6 = linear_fitting(x_predict[start2:end2, 1],
+                                                  y_predict[start2:end2, 1])
         ax6.plot(x_Al2, fitting_w_6 * x_Al2 + fitting_b_6, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_6, fitting_b_6))
         ax6.legend(loc='upper right', frameon=False)
         # Si/YS
-        ax7.scatter(x_testing_[start3:end3, 2], y_testing_[start3:end3, 1],
+        ax7.scatter(x_predict[start3:end3, 2], y_predict[start3:end3, 1],
                     label='Predicted YS', color='chocolate')
-        fitting_w_7, fitting_b_7 = linear_fitting(x_testing_[start3:end3, 2],
-                                                  y_testing_[start3:end3, 1])
+        fitting_w_7, fitting_b_7 = linear_fitting(x_predict[start3:end3, 2],
+                                                  y_predict[start3:end3, 1])
         ax7.plot(x_Si, fitting_w_7 * x_Si + fitting_b_7, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_7, fitting_b_7))
         ax7.legend(loc='upper right', frameon=False)
         # AlSi2Sr/YS
-        ax8.scatter(x_testing_[start4:end4, 3], y_testing_[start4:end4, 1],
+        ax8.scatter(x_predict[start4:end4, 3], y_predict[start4:end4, 1],
                     label='Predicted YS', color='chocolate')
-        fitting_w_8, fitting_b_8 = linear_fitting(x_testing_[start4:end4, 3],
-                                                  y_testing_[start4:end4, 1])
+        fitting_w_8, fitting_b_8 = linear_fitting(x_predict[start4:end4, 3],
+                                                  y_predict[start4:end4, 1])
         ax8.plot(x_AlSi2Sr, fitting_w_8 * x_AlSi2Sr + fitting_b_8, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_8, fitting_b_8))
         ax8.legend(loc='upper right', frameon=False)
@@ -452,10 +457,10 @@ def main(parameters_list):
         ax9.set_xlabel(
             r'Phase fraction of $\alpha$-(Al) phase with regularization')
         ax9.set_ylabel('EL with regularization', color='mediumseagreen')
-        ax9.scatter(x_testing_[start1:end1, 0], y_testing_[start1:end1, 2],
+        ax9.scatter(x_predict[start1:end1, 0], y_predict[start1:end1, 2],
                     label='Predicted EL', color='mediumseagreen')
-        fitting_w_9, fitting_b_9 = linear_fitting(x_testing_[start1:end1, 0],
-                                                  y_testing_[start1:end1, 2])
+        fitting_w_9, fitting_b_9 = linear_fitting(x_predict[start1:end1, 0],
+                                                  y_predict[start1:end1, 2])
         ax9.plot(x_Al, fitting_w_9 * x_Al + fitting_b_9, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_9, fitting_b_9))
         ax9.legend(loc='upper right', frameon=False)
@@ -463,29 +468,29 @@ def main(parameters_list):
         ax10.set_xlabel(
             'Phase fraction of eutectic (Al) phase with regularization')
         ax10.set_ylabel('EL with regularization', color='mediumseagreen')
-        ax10.scatter(x_testing_[start2:end2, 1], y_testing_[start2:end2, 2],
+        ax10.scatter(x_predict[start2:end2, 1], y_predict[start2:end2, 2],
                      label='Predicted EL', color='mediumseagreen')
-        fitting_w_10, fitting_b_10 = linear_fitting(x_testing_[start2:end2, 1],
-                                                    y_testing_[start2:end2, 2])
+        fitting_w_10, fitting_b_10 = linear_fitting(x_predict[start2:end2, 1],
+                                                    y_predict[start2:end2, 2])
         ax10.plot(x_Al2, fitting_w_10 * x_Al2 + fitting_b_10, color='red',
                   linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_10, fitting_b_10))
         ax10.legend(loc='upper right', frameon=False)
         # Si/EL
         ax11.set_xlabel('Phase fraction of Si phase with regularization')
-        ax11.scatter(x_testing_[start3:end3, 2], y_testing_[start3:end3, 2],
+        ax11.scatter(x_predict[start3:end3, 2], y_predict[start3:end3, 2],
                      label='Predicted EL', color='mediumseagreen')
-        fitting_w_11, fitting_b_11 = linear_fitting(x_testing_[start3:end3, 2],
-                                                    y_testing_[start3:end3, 2])
+        fitting_w_11, fitting_b_11 = linear_fitting(x_predict[start3:end3, 2],
+                                                    y_predict[start3:end3, 2])
         ax11.plot(x_Si, fitting_w_11 * x_Si + fitting_b_11, color='red',
                   linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_11, fitting_b_11))
         ax11.legend(loc='upper right', frameon=False)
         # AlSi2Sr/EL
         ax12.set_xlabel(
             'Phase fraction of Al${_2}$Si${_2}$Sr phase with regularization')
-        ax12.scatter(x_testing_[start4:end4, 3], y_testing_[start4:end4, 2],
+        ax12.scatter(x_predict[start4:end4, 3], y_predict[start4:end4, 2],
                      label='Predicted EL', color='mediumseagreen')
-        fitting_w_12, fitting_b_12 = linear_fitting(x_testing_[start4:end4, 3],
-                                                    y_testing_[start4:end4, 2])
+        fitting_w_12, fitting_b_12 = linear_fitting(x_predict[start4:end4, 3],
+                                                    y_predict[start4:end4, 2])
         ax12.plot(x_AlSi2Sr, fitting_w_12 * x_AlSi2Sr + fitting_b_12, color='red',
                   linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_12, fitting_b_12))
         ax12.legend(loc='upper right', frameon=False)
@@ -522,7 +527,7 @@ def main(parameters_list):
         linear_coef_allRE.iloc[10, 1] = fitting_b_11
         linear_coef_allRE.iloc[11, 0] = fitting_w_12
         linear_coef_allRE.iloc[11, 1] = fitting_b_12
-        
+
         linear_coef_allRE.to_csv(
             path + 'linear_coef_allRE.csv', float_format='%.2f')
         # plt.show()
@@ -531,21 +536,15 @@ def main(parameters_list):
 
     x, y_UTS, y_YS, y_EL, EL_Sr = get_training_data(
         training_data_file_path)
-    x_testing, y_UTS_testing, y_YS_testing, y_EL_testing = get_testing_data(
-        training_data_file_path)
-    x_predicting, EL_Sr_predicting = get_predicting_data(
+    x_predict, EL_Sr_predict = get_predicting_data(
         predicting_data_file_path)
 
     # 执行正则化，并记住训练集数据的正则化规则,运用于测试集数据
 
     x_scaler = StandardScaler().fit(x)
     x_standarded = torch.from_numpy(x_scaler.transform(x)).float()
-    x_standarded_test = torch.from_numpy(
-        x_scaler.transform(x_testing)).float()
     x_standarded_predict = torch.from_numpy(
-        x_scaler.transform(x_predicting)).float()
-    # xRe = pd.DataFrame(data=x_standarded_predict.numpy(),
-    #                    columns=['Al', 'Si', 'Al2Si2Sr'])
+        x_scaler.transform(x_predict)).float()
     xRe = pd.DataFrame(data=x_standarded_predict.numpy(),
                        columns=['Al', 'Al2', 'Si', 'Al2Si2Sr'])
     xRe.to_csv(path + 'xRe.csv', float_format='%.2f')
@@ -553,86 +552,45 @@ def main(parameters_list):
     # 调用模型进行预测
 
     y_list = torch.cat((y_UTS, y_YS, y_EL), 1)
-    y_testing_list = torch.cat((y_UTS_testing, y_YS_testing, y_EL_testing), 1)
     with torch.no_grad():
-        # 评估
-        y_testing = predict(model_path, x_standarded_test)
-        y_training = predict(model_path, x_standarded)
-        accuracy_func = torch.nn.L1Loss()
-        training_accuracy_UTS = 1 - \
-            (accuracy_func(
-                y_training[:, 0], y_list[:, 0]) / torch.mean(y_list[:, 0])).item()
-        training_accuracy_YS = 1 - \
-            (accuracy_func(
-                y_training[:, 1], y_list[:, 1]) / torch.mean(y_list[:, 1])).item()
-        training_accuracy_EL = 1 - \
-            (accuracy_func(
-                y_training[:, 2], y_list[:, 2]) / torch.mean(y_list[:, 2])).item()
-        training_accuracy = [training_accuracy_UTS,
-                             training_accuracy_YS, training_accuracy_EL]
-        testing_accuracy_UTS = 1 - \
-            (accuracy_func(
-                y_testing[:, 0], y_testing_list[:, 0]) / torch.mean(y_testing_list[:, 0])).item()
-        testing_accuracy_YS = 1 - \
-            (accuracy_func(
-                y_testing[:, 1], y_testing_list[:, 1]) / torch.mean(y_testing_list[:, 1])).item()
-        testing_accuracy_EL = 1 - \
-            (accuracy_func(
-                y_testing[:, 2], y_testing_list[:, 2]) / torch.mean(y_testing_list[:, 2])).item()
-        testing_accuracy = [testing_accuracy_UTS,
-                            testing_accuracy_YS, testing_accuracy_EL]
         # 预测
-        y_predicting = predict(model_path, x_standarded_predict)
+        y_predict = predict(model_path, x_standarded_predict)
 
-        y_scaler = StandardScaler().fit(y_predicting)
+        real_value = y_list.numpy().flatten()
+        predict_value = predict(model_path, x_standarded).numpy().flatten()
+        R_value = correlation_coefficient(real_value, predict_value)
+        # print(R_value)
+
+        y_scaler = StandardScaler().fit(y_predict)
         y_standarded = torch.from_numpy(y_scaler.transform(y_list)).float()
         y_standarded_predict = torch.from_numpy(
-            y_scaler.transform(y_predicting)).float()
-        # print(y_standarded_predict[:, 0].min())
-        # print(y_standarded_predict[:, 0].max())
-        # print(y_standarded_predict[:, 1].min())
-        # print(y_standarded_predict[:, 1].max())
-        # print(y_standarded_predict[:, 2].min())
-        # print(y_standarded_predict[:, 2].max())
-        # print(y_predicting[:, 0].min())
-        # print(y_predicting[:, 0].max())
-        # print(y_predicting[:, 1].min())
-        # print(y_predicting[:, 1].max())
-        # print(y_predicting[:, 2].min())
-        # print(y_predicting[:, 2].max())
-        # print(x_predicting[:, 0].min())
-        # print(x_predicting[:, 0].max())
-        # print(x_predicting[:, 1].min())
-        # print(x_predicting[:, 1].max())
-        # print(x_predicting[:, 2].min())
-        # print(x_predicting[:, 2].max())
-        # print(EL_Sr.numpy().T[0])
-        # print(y_standarded.numpy()[:, 0])
-        if np.isnan(y_predicting.numpy().any()):
+            y_scaler.transform(y_predict)).float()
+
+        if np.isnan(y_predict.numpy().any()):
             print('==============Prediction run out of range===============')
         else:
             print('==================Prediction complete===================')
 
             # 数据可视化(散点图)
             draw_scatter(EL_Sr.numpy(), y_list.numpy(),
-                         EL_Sr_predicting.numpy(), y_predicting.numpy(),
-                         error, add)
+                         EL_Sr_predict.numpy(), y_predict.numpy(),
+                         error, add, R_value)
 
             # 综合力学性能计算及可视化
             # data_process(path, EL_Si_predicting.numpy(), EL_Mg_predicting.numpy())
 
             # 绘制相分数(正则化)-性能(正则化)关系图
-            draw_relation_allRE(x_standarded.numpy(), y_standarded.numpy(),
-                                x_standarded_predict.numpy(), y_standarded_predict.numpy(),
+            draw_relation_allRE(x_standarded_predict.numpy(),
+                                y_standarded_predict.numpy(),
                                 'Al')
-            draw_relation_allRE(x_standarded.numpy(), y_standarded.numpy(),
-                                x_standarded_predict.numpy(), y_standarded_predict.numpy(),
+            draw_relation_allRE(x_standarded_predict.numpy(),
+                                y_standarded_predict.numpy(),
                                 'Si')
-            draw_relation_allRE(x_standarded.numpy(), y_standarded.numpy(),
-                                x_standarded_predict.numpy(), y_standarded_predict.numpy(),
+            draw_relation_allRE(x_standarded_predict.numpy(),
+                                y_standarded_predict.numpy(),
                                 'Al2Si2Sr')
-            draw_relation_allRE_whole(x_standarded.numpy(), y_standarded.numpy(),
-                                      x_standarded_predict.numpy(), y_standarded_predict.numpy())
+            draw_relation_allRE_whole(x_standarded_predict.numpy(),
+                                      y_standarded_predict.numpy())
 
 
 if __name__ == '__main__':

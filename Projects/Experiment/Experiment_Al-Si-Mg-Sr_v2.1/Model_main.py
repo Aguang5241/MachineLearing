@@ -153,9 +153,9 @@ def main():
         Net = Model_ANN_I.Net
 
         path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Process\\%.3f\\' % index
-        model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Retrain\\10data-CT\\model.pkl'
-        train_end_index = 10
-        add = True
+        model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sr_v2.1\\res\\Retrain\\9data-CT\\model.pkl'
+        train_end_index = 9
+        add = False
         error = np.array([[[3, 3, 3, 3, 3, 3, 3, 3, 3],
                            [3, 3, 3, 3, 3, 3, 3, 3, 3]],
                           [[3, 3, 3, 3, 3, 3, 3, 3, 3],

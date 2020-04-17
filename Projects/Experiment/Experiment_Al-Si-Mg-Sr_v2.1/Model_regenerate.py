@@ -39,6 +39,21 @@ def main(parameters_list):
         y = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSi2Sr'].values).float()
         return EL_Sr, y
 
+    # R value
+
+    def correlation_coefficient(real, predict):
+        real_mean = real.mean()
+        predict_mean = predict.mean()
+        SSR = 0
+        r = 0
+        p = 0
+        for i in range(len(real)):
+            SSR += (real[i] - real_mean) * (predict[i] - predict_mean)
+            r += (real[i] - real_mean) ** 2
+            p += (predict[i] - predict_mean) ** 2
+        SST = np.sqrt(r * p)
+        return SSR / SST
+
     # 定义训练函数
 
     def train(x, y, old_model_path):
@@ -96,12 +111,12 @@ def main(parameters_list):
         results = torch.cat((predict_y, x), 1)
         pd.DataFrame(results.numpy()).to_csv(
             path + 'generate_results.csv',
-            header=['PH_Al','PH_Al2', 'PH_Si', 'PH_AlSi2Sr', 'EL_Sr'])
+            header=['PH_Al', 'PH_Al2', 'PH_Si', 'PH_AlSi2Sr', 'EL_Sr'])
         return predict_y
 
     # 绘制散点图
 
-    def draw_scatter(x_training, y_training, x_predicting, y_predicting, types, error, add, item=None):
+    def draw_scatter(x_training, y_training, x_predicting, y_predicting, types, error, add, R_value=0, item=None):
         sns.set(font="Times New Roman", font_scale=1.3, style='ticks')
         matplotlib.rcParams['xtick.direction'] = 'in'
         matplotlib.rcParams['ytick.direction'] = 'in'
@@ -114,7 +129,7 @@ def main(parameters_list):
         if types == 'whole':
             fig = plt.figure(figsize=(8, 6))
             # ax = brokenaxes.brokenaxes(
-                # ylims=((-3, 9), (35, 75)), hspace=0.05, despine=False)
+            # ylims=((-3, 9), (35, 75)), hspace=0.05, despine=False)
             ax = plt.subplot()
             ax.set_ylim(-3, 90)
             ax.set_xlabel('Sr / wt. %')
@@ -194,6 +209,8 @@ def main(parameters_list):
                 ax.errorbar(x_add4, y_add4, yerr=e_add4,
                             linestyle='None', capsize=5, ecolor='r',
                             fmt='*', mfc='white', mec='r', ms=10)
+            ax.set_title('R = %.6f' % R_value, y=1.015, x=0.8,
+                         fontdict={'style': 'oblique', 'color': 'r'})
             ax.legend(loc='upper right', frameon=False, ncol=2)
             plt.savefig(path + 'elements_%s.png' % types)
         else:
@@ -259,8 +276,15 @@ def main(parameters_list):
         # 此处不需要跟踪梯度
         with torch.no_grad():
             # 预测
-            y_predicting = predict(
-                model_path, x_standarded_predict, EL_Sr_predict)
+            y_predicting = predict(model_path, x_standarded_predict,
+                                   EL_Sr_predict)
+
+            real_value = y.numpy().flatten()
+            predict_value = predict(
+                model_path, x_standarded, EL_Sr).numpy().flatten()
+            R_value = correlation_coefficient(real_value, predict_value)
+            # print(R_value)
+
             if np.isnan(y_predicting.numpy().any()):
                 print('==============Prediction run out of range===============')
             else:
@@ -277,7 +301,7 @@ def main(parameters_list):
                 draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
                              y_predicting.numpy(), 'part', error, add, item='AlSi2Sr')
                 draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
-                             y_predicting.numpy(), 'whole', error, add)
+                             y_predicting.numpy(), 'whole', error, add, R_value)
 
     return training_break
 
