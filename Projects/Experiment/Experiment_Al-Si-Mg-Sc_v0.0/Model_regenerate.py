@@ -111,7 +111,7 @@ def main(parameters_list):
         results = torch.cat((predict_y, x), 1)
         pd.DataFrame(results.numpy()).to_csv(
             path + 'generate_results.csv',
-            header=['PH_Al', 'PH_Al2', 'PH_Si', 'PH_AlSc2Si2', 'EL_Sc'])
+            header=['PH_Al', 'PH_Eut', 'PH_AlSc2Si2', 'EL_Sc'])
         return predict_y
 
     # 绘制散点图
@@ -128,10 +128,10 @@ def main(parameters_list):
 
         if types == 'whole':
             fig = plt.figure(figsize=(8, 6))
-            ax = brokenaxes.brokenaxes(
-            ylims=((-3, 9), (31, 80)), hspace=0.05, despine=False)
-            # ax = plt.subplot()
-            # ax.set_ylim(-3, 90)
+            # ax = brokenaxes.brokenaxes(
+            # ylims=((-3, 9), (31, 80)), hspace=0.05, despine=False)
+            ax = plt.subplot()
+            ax.set_ylim(-3, 90)
             ax.set_xlabel('Sc / wt. %')
             ax.set_ylabel('Phase fraction / %')
             # Predicted
@@ -140,18 +140,14 @@ def main(parameters_list):
                        label=r'Predicted $\alpha$-(Al) phase')
             ax.scatter(x_predicting, y_predicting[:, 1] * 100,
                        s=15, color='chocolate',
-                       label='Predicted eutectic (Al) phase')
+                       label='Predicted eutectic phase')
             ax.scatter(x_predicting, y_predicting[:, 2] * 100,
                        s=15, color='mediumseagreen',
-                       label='Predicted Si phase')
-            ax.scatter(x_predicting, y_predicting[:, 3] * 100,
-                       s=15, color='violet',
                        label='Predicted AlSc${_2}$Si${_2}$ phase')
             # Additional label
             if add:
-                # Al2Si2Sr
                 x_add4 = np.array([x_training[y_index]])
-                y_add4 = np.array([y_training[y_index, 3] * 100])
+                y_add4 = np.array([y_training[y_index, 1] * 100])
                 e_add4 = np.array([[1],
                                    [1]])
                 ax.errorbar(x_add4, y_add4, yerr=e_add4,
@@ -166,14 +162,10 @@ def main(parameters_list):
             ax.errorbar(x_training[0:y_index], y_training[0:y_index, 1] * 100, yerr=error[1],
                         linestyle='None', capsize=5, ecolor='saddlebrown',
                         fmt='o:', mfc='wheat', mec='saddlebrown',
-                        label='Eutectic (Al) phase (CT)')
+                        label='Eutectic phase (CT)')
             ax.errorbar(x_training[0:y_index], y_training[0:y_index, 2] * 100, yerr=error[2],
                         linestyle='None', capsize=5, ecolor='green',
                         fmt='o:', mfc='wheat', mec='green',
-                        label='Eutectic (Si) phase (CT)')
-            ax.errorbar(x_training[0:y_index], y_training[0:y_index, 3] * 100, yerr=error[3],
-                        linestyle='None', capsize=5, ecolor='magenta',
-                        fmt='o:', mfc='wheat', mec='magenta',
                         label='AlSc${_2}$Si${_2}$ phase (CT)')
             # Additional
             if add:
@@ -185,7 +177,7 @@ def main(parameters_list):
                 ax.errorbar(x_add1, y_add1, yerr=e_add1,
                             linestyle='None', capsize=5, ecolor='r',
                             fmt='*', mfc='white', mec='r', ms=10)
-                # Al2
+                # Eut
                 x_add2 = np.array([x_training[y_index]])
                 y_add2 = np.array([y_training[y_index, 1] * 100])
                 e_add2 = np.array([[3],
@@ -193,20 +185,12 @@ def main(parameters_list):
                 ax.errorbar(x_add2, y_add2, yerr=e_add2,
                             linestyle='None', capsize=5, ecolor='r',
                             fmt='*', mfc='white', mec='r', ms=10)
-                # Si
+                # AlSc2Si2
                 x_add3 = np.array([x_training[y_index]])
                 y_add3 = np.array([y_training[y_index, 2] * 100])
                 e_add3 = np.array([[2],
                                    [2]])
                 ax.errorbar(x_add3, y_add3, yerr=e_add3,
-                            linestyle='None', capsize=5, ecolor='r',
-                            fmt='*', mfc='white', mec='r', ms=10)
-                # Al2Si2Sr
-                x_add4 = np.array([x_training[y_index]])
-                y_add4 = np.array([y_training[y_index, 3] * 100])
-                e_add4 = np.array([[1],
-                                   [1]])
-                ax.errorbar(x_add4, y_add4, yerr=e_add4,
                             linestyle='None', capsize=5, ecolor='r',
                             fmt='*', mfc='white', mec='r', ms=10)
             ax.set_title('R = %.6f' % R_value, y=1.015, x=0.8,
@@ -221,31 +205,18 @@ def main(parameters_list):
                 item_ = 'Phase fraction of Al phase / wt. %'
                 fig_name = 'Al'
                 index = 0
-                y_min = 0.35
-                y_max = 0.65
                 ax.vlines(0.54, 0, 1)
-            elif item == 'Al2':
-                item_ = 'Phase fraction of Al2 phase / wt. %'
-                fig_name = 'Al2'
+            elif item == 'Eut':
+                item_ = 'Phase fraction of eutecitic phase / wt. %'
+                fig_name = 'Eut'
                 index = 1
-                y_min = -0.1
-                y_max = 0.55
                 ax.vlines(0.54, 0, 1)
-            elif item == 'Si':
-                item_ = 'Phase fraction of Si phase / wt. %'
-                fig_name = 'Si'
-                index = 2
-                y_min = 0
-                y_max = 0.1
             else:
                 item_ = 'Phase fraction of AlSc${_2}$Si${_2}$ phase/ wt. %'
                 fig_name = 'AlSc2Si2'
-                index = 3
-                y_min = -0.1
-                y_max = 0.1
+                index = 2
 
             ax.set_ylabel(item_)
-            ax.set_ylim(y_min, y_max)
             ax.scatter(x_predicting, y_predicting[:, index],
                        label='Predicted data')
             ax.scatter(x_training, y_training[:, index],
@@ -295,9 +266,7 @@ def main(parameters_list):
                 draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),
                              y_predicting.numpy(), 'part', error, add, item='Al')
                 draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),
-                             y_predicting.numpy(), 'part', error, add, item='Al2')
-                draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),
-                             y_predicting.numpy(), 'part', error, add, item='Si')
+                             y_predicting.numpy(), 'part', error, add, item='Eut')
                 draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),
                              y_predicting.numpy(), 'part', error, add, item='AlSc2Si2')
                 draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),

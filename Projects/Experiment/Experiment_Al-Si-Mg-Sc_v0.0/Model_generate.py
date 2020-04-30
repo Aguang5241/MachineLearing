@@ -90,7 +90,7 @@ def main(parameters_list):
         results = torch.cat((predict_y, x), 1)
         pd.DataFrame(results.numpy()).to_csv(
             path + 'generate_results.csv',
-            header=['PH_Al', 'PH_Al_2', 'PH_Si', 'PH_AlSc2Si2', 'EL_Sc'])
+            header=['PH_Al', 'PH_Eut', 'PH_AlSc2Si2', 'EL_Sc'])
         return predict_y
 
     # 绘制散点图
@@ -110,12 +110,9 @@ def main(parameters_list):
                        label=r'Predicted $\alpha$-(Al) phase')
             ax.scatter(x_predicting, y_predicting[:, 1],
                        s=15, color='chocolate',
-                       label='Predicted eutectic (Al) phase')
+                       label='Predicted eutectic phase')
             ax.scatter(x_predicting, y_predicting[:, 2],
                        s=15, color='mediumseagreen',
-                       label='Predicted Si phase')
-            ax.scatter(x_predicting, y_predicting[:, 3],
-                       s=15, color='violet',
                        label='Predicted AlSc${_2}$Si${_2}$ phase')
             # Training
             ax.scatter(x_training, y_training[:, 0],
@@ -123,12 +120,9 @@ def main(parameters_list):
                        label=r'Experimental $\alpha$-(Al) phase')
             ax.scatter(x_training, y_training[:, 1],
                        s=50, color='saddlebrown',
-                       label='Experimental eutectic (Al) phase')
+                       label='Experimental eutectic phase')
             ax.scatter(x_training, y_training[:, 2],
                        s=50, color='green',
-                       label='Experimental Si phase')
-            ax.scatter(x_training, y_training[:, 3],
-                       s=50, color='magenta',
                        label='Experimental AlSc${_2}$Si${_2}$ phase')
 
             ax.legend(loc='upper right', frameon=False, ncol=2)
@@ -142,19 +136,15 @@ def main(parameters_list):
                 fig_name = 'Al'
                 index = 0
                 ax.vlines(0.54, 0, 1)
-            elif item == 'Al2':
-                item_ = 'Phase fraction of Al2 phase / wt. %'
-                fig_name = 'Al2'
+            elif item == 'Eut':
+                item_ = 'Phase fraction of eutectic phase / wt. %'
+                fig_name = 'Eut'
                 index = 1
                 ax.vlines(0.54, 0, 1)
-            elif item == 'Si':
-                item_ = 'Phase fraction of Si phase / wt. %'
-                fig_name = 'Si'
-                index = 2
             else:
                 item_ = 'Phase fraction of AlSc${_2}$Si${_2}$ phase/ wt. %'
                 fig_name = 'AlSc2Si2'
-                index = 3
+                index = 2
             ax.set_xlabel('Sc / wt. %')
             ax.set_ylabel(item_)
             ax.scatter(
@@ -199,9 +189,7 @@ def main(parameters_list):
                 draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),
                              y_predicting.numpy(), 'part', item='Al')
                 draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),
-                             y_predicting.numpy(), 'part', item='Al2')
-                draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),
-                             y_predicting.numpy(), 'part', item='Si')
+                             y_predicting.numpy(), 'part', item='Eut')
                 draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),
                              y_predicting.numpy(), 'part', item='AlSc2Si2')
                 draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),

@@ -226,35 +226,22 @@ def main(parameters_list):
         matplotlib.rcParams['xtick.direction'] = 'in'
         matplotlib.rcParams['ytick.direction'] = 'in'
         y_min = -7
-        y_max = 5
+        y_max = 7
+        x_index11 = 0
+        x_index12 = 750
 
         if item == 'Al':
             item_name = r'$\alpha$-(Al) phase'
             x_phase = np.linspace(-2, 1, 100)
-            x_index11 = 0
-            x_index12 = 750
             x_index2 = 0
-        elif item == 'Al2':
-            item_name = 'Eutectic (Al) phase'
-            x_phase = np.linspace(-1.3, 1.9, 100)
-            x_index11 = 0
-            x_index12 = 750
+        elif item == 'Eut':
+            item_name = 'eutectic phase'
+            x_phase = np.linspace(-1, 2, 100)
             x_index2 = 1
-            y_max = 7
-        elif item == 'Si':
-            item_name = 'Eutectic (Si) phase'
-            x_phase = np.linspace(-1.8, 2.1, 100)
-            x_index11 = 0
-            x_index12 = 750
-            x_index2 = 2
-            y_max = 7
         else:
             item_name = 'AlSc${_2}$Si${_2}$ phase'
             x_phase = np.linspace(-1.7, 1.3, 100)
-            x_index11 = 0
-            x_index12 = 750
-            x_index2 = 3
-            y_max = 7
+            x_index2 = 2
 
         xlabel = 'Phase fraction of %s with regularization' % item_name
         ylabel = 'Performance with regularization'
@@ -317,69 +304,52 @@ def main(parameters_list):
         matplotlib.rcParams['xtick.direction'] = 'in'
         matplotlib.rcParams['ytick.direction'] = 'in'
         x_Al = np.linspace(-2, 1, 100)
-        x_Al2 = np.linspace(-1.3, 1.9, 100)
-        x_Si = np.linspace(-1.8, 2.1, 100)
+        x_Eut = np.linspace(-1, 2, 100)
         x_AlSc2Si2 = np.linspace(-1.7, 1.3, 100)
         # 取值范围
-        # 两端
-        # start = 29
-        # end = 540
-        # 全部
         start = 0
         end = 751
-        # 部分
-        # start = 540
-        # end = 751
         # UTS
-        fig = plt.figure(figsize=(32, 18))
-        ax1 = plt.subplot(3, 4, 1)
-        ax2 = plt.subplot(3, 4, 2)
-        ax3 = plt.subplot(3, 4, 3)
-        ax4 = plt.subplot(3, 4, 4)
-        ax5 = plt.subplot(3, 4, 5)
-        ax6 = plt.subplot(3, 4, 6)
-        ax7 = plt.subplot(3, 4, 7)
-        ax8 = plt.subplot(3, 4, 8)
-        ax9 = plt.subplot(3, 4, 9)
-        ax10 = plt.subplot(3, 4, 10)
-        ax11 = plt.subplot(3, 4, 11)
-        ax12 = plt.subplot(3, 4, 12)
-        ax1.set_ylim(-4, 2.5)
-        ax2.set_ylim(-4, 2.5)
-        ax3.set_ylim(-4, 2.5)
-        ax4.set_ylim(-4, 2.5)
-        ax5.set_ylim(-4, 2.5)
-        ax6.set_ylim(-4, 2.5)
-        ax7.set_ylim(-4, 2.5)
-        ax8.set_ylim(-4, 2.5)
-        ax9.set_ylim(-4, 2.5)
-        ax10.set_ylim(-4, 2.5)
-        ax11.set_ylim(-4, 2.5)
-        ax12.set_ylim(-4, 2.5)
+        fig = plt.figure(figsize=(24, 18))
+        ax1 = plt.subplot(3, 3, 1)
+        ax2 = plt.subplot(3, 3, 2)
+        ax3 = plt.subplot(3, 3, 3)
+        ax4 = plt.subplot(3, 3, 4)
+        ax5 = plt.subplot(3, 3, 5)
+        ax6 = plt.subplot(3, 3, 6)
+        ax7 = plt.subplot(3, 3, 7)
+        ax8 = plt.subplot(3, 3, 8)
+        ax9 = plt.subplot(3, 3, 9)
+
+        ax1.set_ylim(-2.5, 3)
+        ax2.set_ylim(-2.5, 3)
+        ax3.set_ylim(-2.5, 3)
+        ax4.set_ylim(-2.5, 3)
+        ax5.set_ylim(-2.5, 3)
+        ax6.set_ylim(-2.5, 3)
+        ax7.set_ylim(-3, 3)
+        ax8.set_ylim(-3, 3)
+        ax9.set_ylim(-3, 3)
+
         ax1.spines['left'].set_color('cornflowerblue')
         ax1.tick_params(axis='y', colors='cornflowerblue')
         ax2.spines['left'].set_color('cornflowerblue')
         ax2.tick_params(axis='y', colors='cornflowerblue')
         ax3.spines['left'].set_color('cornflowerblue')
         ax3.tick_params(axis='y', colors='cornflowerblue')
-        ax4.spines['left'].set_color('cornflowerblue')
-        ax4.tick_params(axis='y', colors='cornflowerblue')
+        ax4.spines['left'].set_color('chocolate')
+        ax4.tick_params(axis='y', colors='chocolate')
         ax5.spines['left'].set_color('chocolate')
         ax5.tick_params(axis='y', colors='chocolate')
         ax6.spines['left'].set_color('chocolate')
         ax6.tick_params(axis='y', colors='chocolate')
-        ax7.spines['left'].set_color('chocolate')
-        ax7.tick_params(axis='y', colors='chocolate')
-        ax8.spines['left'].set_color('chocolate')
-        ax8.tick_params(axis='y', colors='chocolate')
+        ax7.spines['left'].set_color('mediumseagreen')
+        ax7.tick_params(axis='y', colors='mediumseagreen')
+        ax8.spines['left'].set_color('mediumseagreen')
+        ax8.tick_params(axis='y', colors='mediumseagreen')
         ax9.spines['left'].set_color('mediumseagreen')
         ax9.tick_params(axis='y', colors='mediumseagreen')
-        ax10.spines['left'].set_color('mediumseagreen')
-        ax10.tick_params(axis='y', colors='mediumseagreen')
-        ax11.spines['left'].set_color('mediumseagreen')
-        ax11.tick_params(axis='y', colors='mediumseagreen')
-        ax12.spines['left'].set_color('mediumseagreen')
-        ax12.tick_params(axis='y', colors='mediumseagreen')
+
         # Al/UTS
         ax1.set_ylabel('UTS with regularization', color='cornflowerblue')
         ax1.scatter(x_predict[start:end, 0], y_predict[start:end, 0],
@@ -389,111 +359,85 @@ def main(parameters_list):
         ax1.plot(x_Al, fitting_w_1 * x_Al + fitting_b_1, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_1, fitting_b_1))
         ax1.legend(loc='upper right', frameon=False)
-        # Al2/UTS
-        ax2.set_ylabel('UTS with regularization', color='cornflowerblue')
+        # Eut/UTS
         ax2.scatter(x_predict[start:end, 1], y_predict[start:end, 0],
                     label='Predicted UTS', color='cornflowerblue')
         fitting_w_2, fitting_b_2 = linear_fitting(x_predict[start:end, 1],
                                                   y_predict[start:end, 0])
-        ax2.plot(x_Al2, fitting_w_2 * x_Al2 + fitting_b_2, color='red',
+        ax2.plot(x_Eut, fitting_w_2 * x_Eut + fitting_b_2, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_2, fitting_b_2))
         ax2.legend(loc='upper right', frameon=False)
-        # Si/UTS
+        # AlSc2Si2/UTS
         ax3.scatter(x_predict[start:end, 2], y_predict[start:end, 0],
                     label='Predicted UTS', color='cornflowerblue')
         fitting_w_3, fitting_b_3 = linear_fitting(x_predict[start:end, 2],
                                                   y_predict[start:end, 0])
-        ax3.plot(x_Si, fitting_w_3 * x_Si + fitting_b_3, color='red',
+        ax3.plot(x_AlSc2Si2, fitting_w_3 * x_AlSc2Si2 + fitting_b_3, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_3, fitting_b_3))
         ax3.legend(loc='upper right', frameon=False)
-        # AlSc2Si2/UTS
-        ax4.scatter(x_predict[start:end, 3], y_predict[start:end, 0],
-                    label='Predicted UTS', color='cornflowerblue')
-        fitting_w_4, fitting_b_4 = linear_fitting(x_predict[start:end, 3],
-                                                  y_predict[start:end, 0])
-        ax4.plot(x_AlSc2Si2, fitting_w_4 * x_AlSc2Si2 + fitting_b_4, color='red',
+        
+        # Al/YS
+        ax4.set_ylabel('YS with regularization', color='chocolate')
+        ax4.scatter(x_predict[start:end, 0], y_predict[start:end, 1],
+                    label='Predicted YS', color='chocolate')
+        fitting_w_4, fitting_b_4 = linear_fitting(x_predict[start:end, 0],
+                                                  y_predict[start:end, 1])
+        ax4.plot(x_Al, fitting_w_4 * x_Al + fitting_b_4, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_4, fitting_b_4))
         ax4.legend(loc='upper right', frameon=False)
-        # Al/YS
-        ax5.set_ylabel('YS with regularization', color='chocolate')
-        ax5.scatter(x_predict[start:end, 0], y_predict[start:end, 1],
+        # Eut/YS
+        ax5.scatter(x_predict[start:end, 1], y_predict[start:end, 1],
                     label='Predicted YS', color='chocolate')
-        fitting_w_5, fitting_b_5 = linear_fitting(x_predict[start:end, 0],
+        fitting_w_5, fitting_b_5 = linear_fitting(x_predict[start:end, 1],
                                                   y_predict[start:end, 1])
-        ax5.plot(x_Al, fitting_w_5 * x_Al + fitting_b_5, color='red',
+        ax5.plot(x_Eut, fitting_w_5 * x_Eut + fitting_b_5, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_5, fitting_b_5))
         ax5.legend(loc='upper right', frameon=False)
-        # Al2/YS
-        ax6.set_ylabel('YS with regularization', color='chocolate')
-        ax6.scatter(x_predict[start:end, 1], y_predict[start:end, 1],
+        # AlSc2Si2/YS
+        ax6.scatter(x_predict[start:end, 2], y_predict[start:end, 1],
                     label='Predicted YS', color='chocolate')
-        fitting_w_6, fitting_b_6 = linear_fitting(x_predict[start:end, 1],
+        fitting_w_6, fitting_b_6 = linear_fitting(x_predict[start:end, 2],
                                                   y_predict[start:end, 1])
-        ax6.plot(x_Al2, fitting_w_6 * x_Al2 + fitting_b_6, color='red',
+        ax6.plot(x_AlSc2Si2, fitting_w_6 * x_AlSc2Si2 + fitting_b_6, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_6, fitting_b_6))
         ax6.legend(loc='upper right', frameon=False)
-        # Si/YS
-        ax7.scatter(x_predict[start:end, 2], y_predict[start:end, 1],
-                    label='Predicted YS', color='chocolate')
-        fitting_w_7, fitting_b_7 = linear_fitting(x_predict[start:end, 2],
-                                                  y_predict[start:end, 1])
-        ax7.plot(x_Si, fitting_w_7 * x_Si + fitting_b_7, color='red',
+        
+        # Al/EL
+        ax7.set_xlabel(
+            r'Phase fraction of $\alpha$-(Al) phase with regularization')
+        ax7.set_ylabel('EL with regularization', color='mediumseagreen')
+        ax7.scatter(x_predict[start:end, 0], y_predict[start:end, 2],
+                    label='Predicted EL', color='mediumseagreen')
+        fitting_w_7, fitting_b_7 = linear_fitting(x_predict[start:end, 0],
+                                                  y_predict[start:end, 2])
+        ax7.plot(x_Al, fitting_w_7 * x_Al + fitting_b_7, color='red',
                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_7, fitting_b_7))
         ax7.legend(loc='upper right', frameon=False)
-        # AlSc2Si2/YS
-        ax8.scatter(x_predict[start:end, 3], y_predict[start:end, 1],
-                    label='Predicted YS', color='chocolate')
-        fitting_w_8, fitting_b_8 = linear_fitting(x_predict[start:end, 3],
-                                                  y_predict[start:end, 1])
-        ax8.plot(x_AlSc2Si2, fitting_w_8 * x_AlSc2Si2 + fitting_b_8, color='red',
-                 linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_8, fitting_b_8))
+        # Eut/EL
+        ax8.set_xlabel(
+            'Phase fraction of eutectic phase with regularization')
+        ax8.scatter(x_predict[start:end, 1], y_predict[start:end, 2],
+                     label='Predicted EL', color='mediumseagreen')
+        fitting_w_8, fitting_b_8 = linear_fitting(x_predict[start:end, 1],
+                                                    y_predict[start:end, 2])
+        ax8.plot(x_Eut, fitting_w_8 * x_Eut + fitting_b_8, color='red',
+                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_8, fitting_b_8))
         ax8.legend(loc='upper right', frameon=False)
-        # Al/EL
-        ax9.set_xlabel(
-            r'Phase fraction of $\alpha$-(Al) phase with regularization')
-        ax9.set_ylabel('EL with regularization', color='mediumseagreen')
-        ax9.scatter(x_predict[start:end, 0], y_predict[start:end, 2],
-                    label='Predicted EL', color='mediumseagreen')
-        fitting_w_9, fitting_b_9 = linear_fitting(x_predict[start:end, 0],
-                                                  y_predict[start:end, 2])
-        ax9.plot(x_Al, fitting_w_9 * x_Al + fitting_b_9, color='red',
-                 linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_9, fitting_b_9))
-        ax9.legend(loc='upper right', frameon=False)
-        # Al2/EL
-        ax10.set_xlabel(
-            'Phase fraction of eutectic (Al) phase with regularization')
-        ax10.set_ylabel('EL with regularization', color='mediumseagreen')
-        ax10.scatter(x_predict[start:end, 1], y_predict[start:end, 2],
-                     label='Predicted EL', color='mediumseagreen')
-        fitting_w_10, fitting_b_10 = linear_fitting(x_predict[start:end, 1],
-                                                    y_predict[start:end, 2])
-        ax10.plot(x_Al2, fitting_w_10 * x_Al2 + fitting_b_10, color='red',
-                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_10, fitting_b_10))
-        ax10.legend(loc='upper right', frameon=False)
-        # Si/EL
-        ax11.set_xlabel('Phase fraction of Si phase with regularization')
-        ax11.scatter(x_predict[start:end, 2], y_predict[start:end, 2],
-                     label='Predicted EL', color='mediumseagreen')
-        fitting_w_11, fitting_b_11 = linear_fitting(x_predict[start:end, 2],
-                                                    y_predict[start:end, 2])
-        ax11.plot(x_Si, fitting_w_11 * x_Si + fitting_b_11, color='red',
-                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_11, fitting_b_11))
-        ax11.legend(loc='upper right', frameon=False)
         # AlSc2Si2/EL
-        ax12.set_xlabel(
-            'Phase fraction of AlSc${_2}$Si${_2}$ phase with regularization')
-        ax12.scatter(x_predict[start:end, 3], y_predict[start:end, 2],
+        ax9.set_xlabel('Phase fraction of Si phase with regularization')
+        ax9.scatter(x_predict[start:end, 2], y_predict[start:end, 2],
                      label='Predicted EL', color='mediumseagreen')
-        fitting_w_12, fitting_b_12 = linear_fitting(x_predict[start:end, 3],
+        fitting_w_9, fitting_b_9 = linear_fitting(x_predict[start:end, 2],
                                                     y_predict[start:end, 2])
-        ax12.plot(x_AlSc2Si2, fitting_w_12 * x_AlSc2Si2 + fitting_b_12, color='red',
-                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_12, fitting_b_12))
-        ax12.legend(loc='upper right', frameon=False)
+        ax9.plot(x_AlSc2Si2, fitting_w_9 * x_AlSc2Si2 + fitting_b_9, color='red',
+                  linestyle='dashed', label='w = %.2f  b = %.2f' % (fitting_w_9, fitting_b_9))
+        ax9.legend(loc='upper right', frameon=False)
+        
         plt.savefig(path + 'phase_allRE.png', bbox_inches='tight')
-        linear_coef_allRE = pd.DataFrame(data=np.ones((12, 2)),
-                                         index=['UTS_Al', 'UTS_Al2', 'UTS_Si', 'UTS_AlSc2Si2',
-                                                'YS_Al', 'YS_Al2', 'YS_Si', 'YS_AlSc2Si2',
-                                                'EL_Al', 'EL_Al2', 'EL_Si', 'EL_AlSc2Si2'],
+        linear_coef_allRE = pd.DataFrame(data=np.ones((9, 2)),
+                                         index=['UTS_Al', 'UTS_Eut', 'UTS_AlSc2Si2',
+                                                'YS_Al', 'YS_Eut', 'YS_AlSc2Si2',
+                                                'EL_Al', 'EL_Eut', 'EL_AlSc2Si2'],
                                          columns=['weight', 'bias'])
         # UTS
         linear_coef_allRE.iloc[0, 0] = fitting_w_1
@@ -502,26 +446,20 @@ def main(parameters_list):
         linear_coef_allRE.iloc[1, 1] = fitting_b_2
         linear_coef_allRE.iloc[2, 0] = fitting_w_3
         linear_coef_allRE.iloc[2, 1] = fitting_b_3
+        # YS
         linear_coef_allRE.iloc[3, 0] = fitting_w_4
         linear_coef_allRE.iloc[3, 1] = fitting_b_4
-        # YS
         linear_coef_allRE.iloc[4, 0] = fitting_w_5
         linear_coef_allRE.iloc[4, 1] = fitting_b_5
         linear_coef_allRE.iloc[5, 0] = fitting_w_6
         linear_coef_allRE.iloc[5, 1] = fitting_b_6
+        # EL
         linear_coef_allRE.iloc[6, 0] = fitting_w_7
         linear_coef_allRE.iloc[6, 1] = fitting_b_7
         linear_coef_allRE.iloc[7, 0] = fitting_w_8
         linear_coef_allRE.iloc[7, 1] = fitting_b_8
-        # EL
         linear_coef_allRE.iloc[8, 0] = fitting_w_9
         linear_coef_allRE.iloc[8, 1] = fitting_b_9
-        linear_coef_allRE.iloc[9, 0] = fitting_w_10
-        linear_coef_allRE.iloc[9, 1] = fitting_b_10
-        linear_coef_allRE.iloc[10, 0] = fitting_w_11
-        linear_coef_allRE.iloc[10, 1] = fitting_b_11
-        linear_coef_allRE.iloc[11, 0] = fitting_w_12
-        linear_coef_allRE.iloc[11, 1] = fitting_b_12
 
         linear_coef_allRE.to_csv(
             path + 'linear_coef_allRE.csv', float_format='%.2f')
@@ -545,19 +483,15 @@ def main(parameters_list):
     # print(x_standarded_predict[:, 0].max().numpy())
     # 0.9373831
     # print(x_standarded_predict[:, 1].min().numpy())
-    # -1.2294818
+    # -0.89873195
     # print(x_standarded_predict[:, 1].max().numpy())
-    # 1.8249916
+    # 1.9338429
     # print(x_standarded_predict[:, 2].min().numpy())
-    # -1.7462678
+    # -1.6524361
     # print(x_standarded_predict[:, 2].max().numpy())
-    # 2.0898392
-    # print(x_standarded_predict[:, 3].min().numpy())
-    # -1.6523643
-    # print(x_standarded_predict[:, 3].max().numpy())
-    # 1.2637262
+    # 1.2637141
     xRe = pd.DataFrame(data=x_standarded_predict.numpy(),
-                       columns=['Al', 'Al2', 'Si', 'Al2Si2Sr'])
+                       columns=['Al', 'Eut', 'Al2Sc2Si2'])
     xRe.to_csv(path + 'xRe.csv', float_format='%.2f')
 
     # 调用模型进行预测
@@ -608,10 +542,7 @@ def main(parameters_list):
                                 'Al')
             draw_relation_allRE(x_standarded_predict.numpy(),
                                 y_standarded_predict.numpy(),
-                                'Al2')
-            draw_relation_allRE(x_standarded_predict.numpy(),
-                                y_standarded_predict.numpy(),
-                                'Si')
+                                'Eut')
             draw_relation_allRE(x_standarded_predict.numpy(),
                                 y_standarded_predict.numpy(),
                                 'AlSc2Si2')
