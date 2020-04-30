@@ -17,7 +17,7 @@ def main(parameters_list):
     training_data_file_path = parameters_list[0]
     features = parameters_list[1]
     loop_max = parameters_list[2]
-    EL_Sr_predict = parameters_list[3]
+    EL_Sc_predict = parameters_list[3]
     ANN_II_layer_1 = parameters_list[4]
     Net = parameters_list[5]
     path = parameters_list[6]
@@ -34,10 +34,10 @@ def main(parameters_list):
     def get_training_data(file_path):
         data = pd.read_csv(file_path)
         data = data.iloc[train_start_index:train_end_index, :]
-        EL_Sr = torch.unsqueeze(
-            (torch.from_numpy(data['EL_Sr'].values)), dim=1).float()
-        y = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSi2Sr'].values).float()
-        return EL_Sr, y
+        EL_Sc = torch.unsqueeze(
+            (torch.from_numpy(data['EL_Sc'].values)), dim=1).float()
+        y = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
+        return EL_Sc, y
 
     # R value
 
@@ -111,7 +111,7 @@ def main(parameters_list):
         results = torch.cat((predict_y, x), 1)
         pd.DataFrame(results.numpy()).to_csv(
             path + 'generate_results.csv',
-            header=['PH_Al', 'PH_Al2', 'PH_Si', 'PH_AlSi2Sr', 'EL_Sr'])
+            header=['PH_Al', 'PH_Al2', 'PH_Si', 'PH_AlSc2Si2', 'EL_Sc'])
         return predict_y
 
     # 绘制散点图
@@ -128,11 +128,11 @@ def main(parameters_list):
 
         if types == 'whole':
             fig = plt.figure(figsize=(8, 6))
-            # ax = brokenaxes.brokenaxes(
-            # ylims=((-3, 9), (35, 75)), hspace=0.05, despine=False)
-            ax = plt.subplot()
-            ax.set_ylim(-3, 90)
-            ax.set_xlabel('Sr / wt. %')
+            ax = brokenaxes.brokenaxes(
+            ylims=((-3, 9), (31, 80)), hspace=0.05, despine=False)
+            # ax = plt.subplot()
+            # ax.set_ylim(-3, 90)
+            ax.set_xlabel('Sc / wt. %')
             ax.set_ylabel('Phase fraction / %')
             # Predicted
             ax.scatter(x_predicting, y_predicting[:, 0] * 100,
@@ -146,7 +146,7 @@ def main(parameters_list):
                        label='Predicted Si phase')
             ax.scatter(x_predicting, y_predicting[:, 3] * 100,
                        s=15, color='violet',
-                       label='Predicted Al${_2}$Si${_2}$Sr phase')
+                       label='Predicted AlSc${_2}$Si${_2}$ phase')
             # Additional label
             if add:
                 # Al2Si2Sr
@@ -174,7 +174,7 @@ def main(parameters_list):
             ax.errorbar(x_training[0:y_index], y_training[0:y_index, 3] * 100, yerr=error[3],
                         linestyle='None', capsize=5, ecolor='magenta',
                         fmt='o:', mfc='wheat', mec='magenta',
-                        label='Al${_2}$Si${_2}$Sr phase (CT)')
+                        label='AlSc${_2}$Si${_2}$ phase (CT)')
             # Additional
             if add:
                 # Al
@@ -216,21 +216,21 @@ def main(parameters_list):
         else:
             fig = plt.figure(figsize=(8, 6))
             ax = plt.subplot()
-            ax.set_xlabel('Sr / wt. %')
+            ax.set_xlabel('Sc / wt. %')
             if item == 'Al':
                 item_ = 'Phase fraction of Al phase / wt. %'
                 fig_name = 'Al'
                 index = 0
                 y_min = 0.35
-                y_max = 0.55
-                ax.vlines(0.077, 0, 1)
+                y_max = 0.65
+                ax.vlines(0.54, 0, 1)
             elif item == 'Al2':
                 item_ = 'Phase fraction of Al2 phase / wt. %'
                 fig_name = 'Al2'
                 index = 1
-                y_min = 0
+                y_min = -0.1
                 y_max = 0.55
-                ax.vlines(0.077, 0, 1)
+                ax.vlines(0.54, 0, 1)
             elif item == 'Si':
                 item_ = 'Phase fraction of Si phase / wt. %'
                 fig_name = 'Si'
@@ -238,8 +238,8 @@ def main(parameters_list):
                 y_min = 0
                 y_max = 0.1
             else:
-                item_ = 'Phase fraction of Al${_2}$Si${_2}$Sr phase/ wt. %'
-                fig_name = 'AlSi2Sr'
+                item_ = 'Phase fraction of AlSc${_2}$Si${_2}$ phase/ wt. %'
+                fig_name = 'AlSc2Si2'
                 index = 3
                 y_min = -0.1
                 y_max = 0.1
@@ -256,14 +256,14 @@ def main(parameters_list):
 
     # 获取数据
 
-    EL_Sr, y = get_training_data(training_data_file_path)
+    EL_Sc, y = get_training_data(training_data_file_path)
 
     # 正则化
 
-    x_scaler = StandardScaler().fit(EL_Sr)
-    x_standarded = torch.from_numpy(x_scaler.transform(EL_Sr)).float()
+    x_scaler = StandardScaler().fit(EL_Sc)
+    x_standarded = torch.from_numpy(x_scaler.transform(EL_Sc)).float()
     x_standarded_predict = torch.from_numpy(
-        x_scaler.transform(EL_Sr_predict)).float()
+        x_scaler.transform(EL_Sc_predict)).float()
 
     # 执行模型训练
 
@@ -276,14 +276,14 @@ def main(parameters_list):
         # 此处不需要跟踪梯度
         with torch.no_grad():
             # 预测
-            y_predicting = predict(model_path, x_standarded_predict,
-                                   EL_Sr_predict)
-
             real_value = y.numpy().flatten()
             predict_value = predict(
-                model_path, x_standarded, EL_Sr).numpy().flatten()
+                model_path, x_standarded, EL_Sc).numpy().flatten()
             R_value = correlation_coefficient(real_value, predict_value)
             # print(R_value)
+            
+            y_predicting = predict(model_path, x_standarded_predict,
+                                   EL_Sc_predict)
 
             if np.isnan(y_predicting.numpy().any()):
                 print('==============Prediction run out of range===============')
@@ -292,15 +292,15 @@ def main(parameters_list):
 
                 # 数据可视化(散点图)
 
-                draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
+                draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),
                              y_predicting.numpy(), 'part', error, add, item='Al')
-                draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
+                draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),
                              y_predicting.numpy(), 'part', error, add, item='Al2')
-                draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
+                draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),
                              y_predicting.numpy(), 'part', error, add, item='Si')
-                draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
-                             y_predicting.numpy(), 'part', error, add, item='AlSi2Sr')
-                draw_scatter(EL_Sr.numpy(), y.numpy(), EL_Sr_predict.numpy(),
+                draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),
+                             y_predicting.numpy(), 'part', error, add, item='AlSc2Si2')
+                draw_scatter(EL_Sc.numpy(), y.numpy(), EL_Sc_predict.numpy(),
                              y_predicting.numpy(), 'whole', error, add, R_value)
 
     return training_break
