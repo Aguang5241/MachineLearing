@@ -37,16 +37,16 @@ def main(parameters_list):
 
     def get_predicting_data(file_path):
         data = pd.read_csv(file_path)
-        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
-        EL_Sc = torch.unsqueeze(
-            (torch.from_numpy(data['EL_Sc'].values)), dim=1).float()
-        return x, EL_Sc
+        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlCeSi2'].values).float()
+        EL_Ce = torch.unsqueeze(
+            (torch.from_numpy(data['EL_Ce'].values)), dim=1).float()
+        return x, EL_Ce
 
     # 定义获取测试数据函数
 
     def get_testing_data(file_path):
         data = pd.read_csv(file_path)
-        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
+        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlCeSi2'].values).float()
         y_UTS = torch.unsqueeze(
             (torch.from_numpy(data['UTS'].values)), dim=1).float()
         y_YS = torch.unsqueeze(
@@ -60,16 +60,16 @@ def main(parameters_list):
     def get_training_data(file_path):
         data = pd.read_csv(file_path)
         data = data.iloc[train_start_index:train_end_index, :]
-        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlSc2Si2'].values).float()
+        x = torch.from_numpy(data.loc[:, 'PH_Al':'PH_AlCeSi2'].values).float()
         y_UTS = torch.unsqueeze(
             (torch.from_numpy(data['UTS'].values)), dim=1).float()
         y_YS = torch.unsqueeze(
             (torch.from_numpy(data['YS'].values)), dim=1).float()
         y_EL = torch.unsqueeze(
             (torch.from_numpy(data['EL'].values)), dim=1).float()
-        EL_Sc = torch.unsqueeze(
-            (torch.from_numpy(data['EL_Sc'].values)), dim=1).float()
-        return x, y_UTS, y_YS, y_EL, EL_Sc
+        EL_Ce = torch.unsqueeze(
+            (torch.from_numpy(data['EL_Ce'].values)), dim=1).float()
+        return x, y_UTS, y_YS, y_EL, EL_Ce
     
     def relu_func(x):
         x = x[x < 0] = 0
@@ -199,7 +199,7 @@ def main(parameters_list):
         ax = plt.subplot()
         ax.set_title('Training accuracy: %.2f %%  Testing accuracy: %.2f %%' % (
             training_accuracy * 100, testing_accuracy * 100))
-        ax.set_xlabel('Sc / wt. %')
+        ax.set_xlabel('Ce / wt. %')
         ax.set_ylabel(item)
         ax.scatter(x_predicting, y_predicting, label='Predicting data')
         ax.scatter(x_training, y_training,
@@ -210,11 +210,11 @@ def main(parameters_list):
 
     # 获取数据
 
-    x, y_UTS, y_YS, y_EL, EL_Sc = get_training_data(
+    x, y_UTS, y_YS, y_EL, EL_Ce = get_training_data(
         training_data_file_path)
     x_testing, y_UTS_testing, y_YS_testing, y_EL_testing = get_testing_data(
         training_data_file_path)
-    x_predicting, EL_Sc_predicting = get_predicting_data(
+    x_predicting, EL_Ce_predicting = get_predicting_data(
         predicting_data_file_path)
 
     # 执行正则化，并记住训练集数据的正则化规则,运用于测试集数据
@@ -272,16 +272,16 @@ def main(parameters_list):
                 print('==================Prediction complete===================')
 
                 # 数据可视化(散点图)
-                draw_scatter(EL_Sc.numpy(),  y_UTS.numpy(),
-                             EL_Sc_predicting.numpy(),
+                draw_scatter(EL_Ce.numpy(),  y_UTS.numpy(),
+                             EL_Ce_predicting.numpy(),
                              y_predicting.numpy()[:, 0],
                              'UTS / MPa', training_accuracy[0], testing_accuracy[0])
-                draw_scatter(EL_Sc.numpy(), y_YS.numpy(),
-                             EL_Sc_predicting.numpy(),
+                draw_scatter(EL_Ce.numpy(), y_YS.numpy(),
+                             EL_Ce_predicting.numpy(),
                              y_predicting.numpy()[:, 1],
                              'YS / MPa', training_accuracy[1], testing_accuracy[1])
-                draw_scatter(EL_Sc.numpy(), y_EL.numpy(),
-                             EL_Sc_predicting.numpy(),
+                draw_scatter(EL_Ce.numpy(), y_EL.numpy(),
+                             EL_Ce_predicting.numpy(),
                              y_predicting.numpy()[:, 2],
                              'EL / %', training_accuracy[2], testing_accuracy[2])
     return training_break

@@ -22,10 +22,10 @@ import numpy as np
 def main():
 
     # Common
-    training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sc_v0.0\\res\\Data\\Training_data_CT.csv'
-    # predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sc_v0.0\\res\\Regenerate\\11data-CT\\generate_results.csv'
-    predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sc_v0.0\\res\\Data\\Predicting_data_CT.csv'
-    features = 4
+    training_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Ce_v0.0\\res\\Data\\Training_data_CT.csv'
+    # predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Ce_v0.0\\res\\Regenerate\\6data\\generate_results.csv'
+    predicting_data_file_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Ce_v0.0\\res\\Data\\Predicting_data_CT.csv'
+    features = 3
     index = np.random.randn(1)
     loop_max = 1e5
     train_start_index = 0
@@ -36,8 +36,8 @@ def main():
     ANN_I_layer_2 = 6
 
     # Model-II
-    EL_Sr_predict = torch.from_numpy(
-        np.transpose([np.linspace(0, 0.125, 251)])).float()
+    EL_Sc_predict = torch.from_numpy(
+        np.transpose([np.linspace(0, 1.41, 143)])).float()
     ANN_II_layer_1 = 8
 
     ############################################################
@@ -49,11 +49,11 @@ def main():
         # 定义神经网络
         Net = Model_ANN_II.Net
 
-        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sc_v0.0\\res\\Generate\\%.3f\\' % index
+        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Ce_v0.0\\res\\Generate\\%.3f\\' % index
         learning_rate = 1e-3
-        loss_threashold_value = 1e-7
-        train_end_index = 6
-        parameters_list = [training_data_file_path, features, loop_max, EL_Sr_predict,
+        loss_threashold_value = 1e-9
+        train_end_index = 7
+        parameters_list = [training_data_file_path, features, loop_max, EL_Sc_predict,
                            ANN_II_layer_1, Net, path, learning_rate, loss_threashold_value,
                            train_start_index, train_end_index]
         training_break = Model_generate.main(parameters_list)
@@ -70,21 +70,21 @@ def main():
         # 定义神经网络
         Net = Model_ANN_II.Net
 
-        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sc_v0.0\\res\\Regenerate\\%.3f\\' % index
-        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sc_v0.0\\res\\Regenerate\\9data-CT\\generate_model.pkl'
+        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Ce_v0.0\\res\\Regenerate\\%.3f\\' % index
+        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Ce_v0.0\\res\\Generate\\7data\\generate_model.pkl'
         learning_rate = 1e-3
-        loss_threashold_value = 5e-7
-        train_end_index = 10
+        loss_threashold_value = 5e-11
+        train_end_index = 8
         add = True
-        error = np.array([[[3, 3, 3, 3, 3, 3, 3, 3, 3],
-                           [3, 3, 3, 3, 3, 3, 3, 3, 3]],
-                          [[3, 3, 3, 3, 3, 3, 3, 3, 3],
-                           [3, 3, 3, 3, 3, 3, 3, 3, 3]],
-                          [[2, 2, 2, 2, 2, 2, 2, 2, 2],
-                           [2, 2, 2, 2, 2, 2, 2, 2, 2]],
-                          [[1, 1, 1, 1, 1, 1, 1, 1, 1],
-                           [1, 1, 1, 1, 1, 1, 1, 1, 1]]])
-        parameters_list = [training_data_file_path, features, loop_max, EL_Sr_predict,
+        error = np.array([[[3, 3, 3, 3, 3, 3, 3],
+                           [3, 3, 3, 3, 3, 3, 3]],
+                          [[3, 3, 3, 3, 3, 3, 3],
+                           [3, 3, 3, 3, 3, 3, 3]],
+                          [[2, 2, 2, 2, 2, 2, 2],
+                           [2, 2, 2, 2, 2, 2, 2]],
+                          [[1, 1, 1, 1, 1, 1, 1],
+                           [1, 1, 1, 1, 1, 1, 1]]])
+        parameters_list = [training_data_file_path, features, loop_max, EL_Sc_predict,
                            ANN_II_layer_1, Net, path, old_model_path, learning_rate,
                            loss_threashold_value, train_start_index, train_end_index,
                            error, add]
@@ -102,10 +102,10 @@ def main():
         # 定义神经网络
         Net = Model_ANN_I.Net
 
-        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sc_v0.0\\res\\Train\\%.3f\\' % index
+        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Ce_v0.0\\res\\Train\\%.3f\\' % index
         learning_rate = 1e-3
         loss_threashold_value = 1e-2
-        train_end_index = 5
+        train_end_index = 7
         error = e.repeat(train_end_index - train_start_index, 1)
         upper_limit = 3
         lower_limit = -(upper_limit / 8) * 2
@@ -127,11 +127,11 @@ def main():
         # 定义神经网络
         Net = Model_ANN_I.Net
 
-        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sc_v0.0\\res\\Retrain\\%.3f\\' % index
-        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sc_v0.0\\res\\Train\\5data-CT\\model.pkl'
+        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Ce_v0.0\\res\\Retrain\\%.3f\\' % index
+        old_model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Ce_v0.0\\res\\Train\\7data\\model.pkl'
         learning_rate = 1e-3
-        loss_threashold_value = 1e-1
-        train_end_index = 6
+        loss_threashold_value = 1e-2
+        train_end_index = 8
         error = e.repeat(train_end_index - train_start_index, 1)
         upper_limit = 3
         lower_limit = -(upper_limit / 8) * 2
@@ -153,16 +153,16 @@ def main():
         # 定义神经网络
         Net = Model_ANN_I.Net
 
-        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sc_v0.0\\res\\Process\\%.3f\\' % index
-        model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Sc_v0.0\\res\\Retrain\\6data-CT\\model.pkl'
-        train_end_index = 6
+        path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Ce_v0.0\\res\\Process\\%.3f\\' % index
+        model_path = r'Projects\\Experiment\\Experiment_Al-Si-Mg-Ce_v0.0\\res\\Retrain\\8data\\model.pkl'
+        train_end_index = 8
         add = True
-        error = np.array([[[3, 3, 3, 3, 3],
-                           [3, 3, 3, 3, 3]],
-                          [[3, 3, 3, 3, 3],
-                           [3, 3, 3, 3, 3]],
-                          [[1, 1, 1, 1, 1],
-                           [1, 1, 1, 1, 1]]])
+        error = np.array([[[3, 3, 3, 3, 3, 3, 3],
+                           [3, 3, 3, 3, 3, 3, 3]],
+                          [[3, 3, 3, 3, 3, 3, 3],
+                           [3, 3, 3, 3, 3, 3, 3]],
+                          [[1, 1, 1, 1, 1, 1, 1],
+                           [1, 1, 1, 1, 1, 1, 1]]])
         parameters_list = [training_data_file_path, predicting_data_file_path,
                            path, model_path, train_start_index,
                            train_end_index, error, add]

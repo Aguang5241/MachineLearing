@@ -128,10 +128,10 @@ def main(parameters_list):
 
         if types == 'whole':
             fig = plt.figure(figsize=(8, 6))
-            # ax = brokenaxes.brokenaxes(
-            # ylims=((-3, 9), (31, 80)), hspace=0.05, despine=False)
-            ax = plt.subplot()
-            ax.set_ylim(-3, 90)
+            ax = brokenaxes.brokenaxes(
+            ylims=((-3, 9), (35, 80)), hspace=0.05, despine=False)
+            # ax = plt.subplot()
+            # ax.set_ylim(-3, 90)
             ax.set_xlabel('Sc / wt. %')
             ax.set_ylabel('Phase fraction / %')
             # Predicted
