@@ -12,7 +12,7 @@ def main():
         fig = plt.figure(figsize=(8, 6))
         plt.scatter(x, y)
         plt.savefig(
-            r'D:\Study\Coding\MachineLearing\DeepLearningWithPyTorch\res\2.2.4.rawdata.png')
+            r'D:\Study\Coding\MachineLearing\DeepLearningWithPyTorch\res\2.4.rawdata.png')
         # plt.show()
 
     # 绘制拟合结果
@@ -23,7 +23,7 @@ def main():
         plt.scatter(x, y)
         plt.plot(x_, w * x_ + b, color='r')
         plt.savefig(
-            r'D:\Study\Coding\MachineLearing\DeepLearningWithPyTorch\res\2.2.4.fitdata.png')
+            r'D:\Study\Coding\MachineLearing\DeepLearningWithPyTorch\res\2.4.fitdata.png')
         # plt.show()
 
     # 获取散点数据（张量）
